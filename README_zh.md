@@ -49,22 +49,22 @@ nmlc -c -l lang --default-lang=english.lng `
 
 ## 制作人员
 
-- Andy
-- Bob
-- Carl
-- Dennis
-- Eric
-- Frank
+- Zhengyu Huo
+- Alexei124r
+- justinli489
+- Xianyu
+- Misaka13113
+- Luoyezhiqiu
 
 所有成员都制作了体素模型，并参与设计讨论。其它分工如下：
 
-- Bob、Carl：NML 代码。
-- Bob：最终图像和精灵图制作。
-- Bob、Andy：发起世界观设定，所有成员共同参与设定讨论和决定。
-- Carl、Dennis：制定体素模型标准。
-- Eric、Frank：细节设计策划。
-- Bob、Dennis：测试与平衡。
-- Bob、Carl：文档编写。
+- Alexei124r、justinli489：NML 代码。
+- Alexei124r：最终图像和精灵图制作。
+- Alexei124r、Zhengyu Huo：发起世界观设定，所有成员共同参与设定讨论和决定。
+- justinli489、Xianyu：制定体素模型标准。
+- Misaka13113、Luoyezhiqiu：细节设计策划。
+- Alexei124r、Xianyu：测试与平衡。
+- Alexei124r、justinli489：文档编写。
 - 工作安排：共同商议。
 
 AI 辅助说明：

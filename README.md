@@ -59,24 +59,24 @@ nmlc -c -l lang --default-lang=english.lng `
 
 Project contributors:
 
-- Andy
-- Bob
-- Carl
-- Dennis
-- Eric
-- Frank
+- Zhengyu Huo
+- Alexei124r
+- justinli489
+- Xianyu
+- Misaka13113
+- Luoyezhiqiu
 
 All contributors produced voxel models and participated in design discussions.
 Additional responsibilities:
 
-- Bob and Carl: NML code.
-- Bob: final image and sprite production.
-- Bob and Andy: initial worldbuilding, with all members contributing to the
+- Alexei124r and justinli489: NML code.
+- Alexei124r: final image and sprite production.
+- Alexei124r and Zhengyu Huo: initial worldbuilding, with all members contributing to the
   setting.
-- Carl and Dennis: voxel-model standards.
-- Eric and Frank: detailed design planning.
-- Bob and Dennis: testing and balancing.
-- Bob and Carl: documentation.
+- justinli489 and Xianyu: voxel-model standards.
+- Misaka13113 and Luoyezhiqiu: detailed design planning.
+- Alexei124r and Xianyu: testing and balancing.
+- Alexei124r and justinli489: documentation.
 - Work planning: collective discussion.
 
 AI assistance:
