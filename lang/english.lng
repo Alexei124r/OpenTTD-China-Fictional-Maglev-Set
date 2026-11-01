@@ -1,0 +1,99 @@
+##grflangid 0x01
+
+STR_GRF_NAME :China Fictional Maglev Set
+STR_GRF_DESC :Fictional Chinese maglev vehicles: TR08, TR2012, TR2015 and MR2015 with multiple livery schemes. Runs on maglev track.
+STR_GRF_URL :https://github.com/OpenTTD-China-Set/China-Set-Trains
+STR_PARAM_CAPACITY :Passenger capacity
+STR_PARAM_CAPACITY_DESC :Multiplier for passenger capacity. Default 100%.
+STR_PARAM_PURCHASE :Purchase cost
+STR_PARAM_PURCHASE_DESC :Multiplier for purchase cost. Default 100%.
+STR_PARAM_RUNNING :Running cost
+STR_PARAM_RUNNING_DESC :Multiplier for running cost. Default 100%.
+STR_PARAM_MAIL_CAPACITY :Mail capacity
+STR_PARAM_MAIL_CAPACITY_DESC :Mail capacity multiplier for all mail-capable vehicles.
+STR_PARAM_LOADING_RATE :Loading speed
+STR_PARAM_LOADING_RATE_DESC :Loading and unloading speed multiplier for all vehicles.
+STR_PARAM_CARGO_AGE :Cargo age period
+STR_PARAM_CARGO_AGE_DESC :Cargo age period multiplier for all vehicles.
+STR_PARAM_MAIL_X05 :x0.5
+STR_PARAM_MAIL_X1 :x1
+STR_PARAM_MAIL_X2 :x2
+STR_PARAM_MAIL_X4 :x4
+STR_PARAM_X1 :x1
+STR_PARAM_X2 :x2
+STR_PARAM_X4 :x4
+STR_ERROR_CONSIST :Invalid maglev consist: at most two regular head cars, at most two MR2015 when mixed, and at least one intermediate car between two heads.
+STR_NAME_TR08_HEAD :Transrapid 08 Head Car
+STR_NAME_TR08_HEAD_FIRST :Transrapid 08 Head Car (First Class)
+STR_NAME_TR08_HEAD_SECOND :Transrapid 08 Head Car (Second Class)
+STR_NAME_TR2012_HEAD :Transrapid 2012 Head Car
+STR_NAME_MID :Maglev Intermediate Car
+STR_NAME_MID_FIRST :First Class Intermediate Car
+STR_NAME_MID_SECOND :Second Class Intermediate Car
+STR_DESC_TR08 :Maglev, 430 km/h. Can attach first-class and second-class intermediate cars. Refit selects livery.
+STR_DESC_TR2012 :Maglev, 350 km/h. Can attach second-class intermediate cars. Refit selects livery.
+STR_DESC_MID :Refit for type, class and livery. Power and capacity are set by the leading head car.
+STR_NAME_MAGLEV_TRANSRANGER_2015 :TR2015 TransRanger Engineering Car
+STR_DESC_MAGLEV_TRANSRANGER_2015 :Maglev engineering and towing car. 160 km/h alone; mixed passenger consists are limited to 100 km/h.
+STR_DESC_MAGLEV_TRANSRANGER_2015_SIMPLE :Maglev engineering and towing car, 160 km/h. Static compatibility version without consist-dependent limits.
+STR_NAME_MR2015 :Maglevranger 2015 (MR2015) Engineering Car
+STR_DESC_MR2015 :Maglev engineering and towing car. 160 km/h alone; mixed passenger consists are limited to 100 km/h.
+STR_NAME_TR2015_HEAD :Transrapid 2015 Passenger Head Car
+STR_DESC_TR2015_HEAD :Maglev passenger head car, 450 km/h. Can attach first-class, second-class and baggage/second-class composite cars; a dining car is reserved. Refit selects livery.
+STR_NAME_TR2015_FREIGHT_HEAD :Transrapid 2015 Freight Head Car
+STR_DESC_TR2015_FREIGHT_HEAD :Maglev freight head car, 450 km/h. Can attach freight and refrigerated cars.
+STR_NAME_TR2015_FREIGHT_MID :TR2015 Freight Car
+STR_DESC_TR2015_FREIGHT_MID :Maglev freight car. Requires a TR2015 freight head car for traction.
+STR_NAME_TR2015_REFRIGERATED :TR2015 Refrigerated Car
+STR_DESC_TR2015_REFRIGERATED :Maglev refrigerated freight car. Requires a TR2015 freight head car for traction.
+STR_NAME_TR2015_ZEXL :TR2015 Baggage/Second-Class Composite Car
+STR_DESC_TR2015_ZEXL :Combined mail and passenger car. Currently may only be attached behind the TR2015 passenger head car.
+STR_NAME_TR2015_ZEXL_PASSENGER :TR2015 Composite Passenger Section
+STR_SUB_TR08_A_F :White / Red
+STR_SUB_TR08_A_S :White / Red
+STR_SUB_TR08_B_F :Vermilion / Gold
+STR_SUB_TR08_B_S :Vermilion / Gold
+STR_SUB_TR08_C_F :Shanghai Maglev (Orange / Teal)
+STR_SUB_TR08_C_S :Shanghai Maglev (Orange / Teal)
+STR_SUB_TR08_G_F :RZD (Red / White / Grey)
+STR_SUB_TR08_G_S :RZD (Red / White / Grey)
+STR_SUB_TR08_H_F :JNR 185 Green Diagonal (Forward)
+STR_SUB_TR08_H_S :JNR 185 Green Diagonal (Forward)
+STR_SUB_TR08_Hf_F :JNR 185 Green Diagonal (Reverse)
+STR_SUB_TR08_Hf_S :JNR 185 Green Diagonal (Reverse)
+STR_SUB_T12_A_S :White / Red
+STR_SUB_T12_B_S :Shanghai Maglev (Orange / Teal)
+STR_SUB_T12_C_S :Orange / Yellow
+STR_SUB_T12_D_S :JNR 185 Green Diagonal (Forward)
+STR_SUB_T12_Df_S :JNR 185 Green Diagonal (Reverse)
+STR_SUB_T12_E_S :Cream / Vermilion
+STR_SUB_T12_F_S :White / Indigo
+STR_SUB_T12_G_S :White / Company Colour
+STR_SUB_T12_H_S :Shanghai Bus Link
+STR_SUB_T15_RED_DRAGON_S :Red Dragon
+STR_SUB_T15_SILVER_SWORD_S :Silver Sword
+STR_SUB_T15_SHANGHAI_METRO_S :Shanghai Metro Link
+STR_SUB_T15_ENGINEERING_S :Engineering Yellow
+STR_SUB_T15_SSPE_FREIGHT :SSPE Freight
+STR_SUB_T15_RED_DRAGON_FREIGHT :Red Dragon Freight
+STR_SUB_T15_RED_DRAGON_FIRST :Red Dragon · First Class
+STR_SUB_T15_RED_DRAGON_SECOND :Red Dragon · Second Class
+STR_SUB_T15_SILVER_SWORD_FIRST :Silver Sword · First Class
+STR_SUB_T15_SILVER_SWORD_SECOND :Silver Sword · Second Class
+STR_SUB_MID_TR08_A_F :TR08 · White / Red
+STR_SUB_MID_TR08_A_S :TR08 · White / Red
+STR_SUB_MID_TR08_B_F :TR08 · Vermilion / Gold
+STR_SUB_MID_TR08_B_S :TR08 · Vermilion / Gold
+STR_SUB_MID_TR08_C_F :TR08 · Shanghai Maglev (Orange / Teal)
+STR_SUB_MID_TR08_C_S :TR08 · Shanghai Maglev (Orange / Teal)
+STR_SUB_MID_TR08_G_F :TR08 · RZD (Red / White / Grey)
+STR_SUB_MID_TR08_G_S :TR08 · RZD (Red / White / Grey)
+STR_SUB_MID_TR08_H_F :TR08 · Green Diagonal (Forward)
+STR_SUB_MID_TR08_H_S :TR08 · Green Diagonal (Forward)
+STR_SUB_MID_TR08_Hr_F :TR08 · Green Diagonal (Reverse)
+STR_SUB_MID_TR08_Hr_S :TR08 · Green Diagonal (Reverse)
+STR_SUB_MID_T12_A_S :TR2012 · White / Red
+STR_SUB_MID_T12_B_S :TR2012 · Shanghai Maglev (Orange / Teal)
+STR_SUB_MID_T12_C_S :TR2012 · Orange / Yellow
+STR_SUB_MID_T12_D_S :TR2012 · Green Diagonal (Forward)
+STR_SUB_MID_T12_Dr_S :TR2012 · Green Diagonal (Reverse)

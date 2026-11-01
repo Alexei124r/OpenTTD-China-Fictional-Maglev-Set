@@ -1,0 +1,2232 @@
+// SPDX-License-Identifier: GPL-2.0-only
+// Copyright (C) 2026 Andy, Bob, Carl, Dennis, Eric, Frank
+// ============================================================================
+// China Fictional Maglev Set
+// NML source, 2026-11-01 v2.1
+//
+// Liveries:
+//   TR08   : A white/red, C Shanghai Maglev, G RZD red/white/grey
+//   TR2012 : A white/red, B Shanghai Maglev, C orange/yellow,
+//            D/Df JNR185 forward/reverse, E cream/vermilion,
+//            F white/indigo, G white/company colour,
+//            H Shanghai bus link
+//   TR2015 : red dragon / silver sword, first/second class mid consist
+//
+// Purchase list (7 items):
+//   tr08_head_first   Transrapid 08 head car, first class
+//   tr08_head_second  Transrapid 08 head car, second class
+//   tr2012_head       Transrapid 2012 head car, second class only
+//   mid_first         first class intermediate car (TR08 + TR2015)
+//   mid_second        second class intermediate car (TR08 + TR2012 + TR2015)
+//   maglevranger_2015 MR2015 engineering car
+//   tr2015_head       TR2015 passenger head car
+//
+// Every item is a 2 + 8 + 2 articulated unit = 12/16 tile = 0.75 tile.
+// Only the middle articulated part carries a sprite. With two regular head
+// cars, their global positions determine forward and reverse orientation.
+//
+// Livery is chosen by the head car's cargo_subtype.  Intermediate cars read
+// the livery from PARENT (the leading head car), so the whole train always
+// follows the head car's livery.
+//
+// IMPORTANT (see 2026-10-20 fix):
+//   A livery_override block replaces the *whole* graphics block of the wagon.
+//   Every callback the wagon needs (length, articulated_part, capacity, age,
+//   power, ...) must therefore be repeated inside the override, otherwise the
+//   wagon falls back to the plain Action 0 defaults (length = 8 per part =>
+//   the unit becomes 24/16 = 1.5 tile, and the capacity callback is evaluated
+//   with a broken part position => 0).  This is why `length` and
+//   `articulated_part` are present in every livery_override below.
+// ============================================================================
+
+grf {
+    grfid: "\4F\3F\01\00";
+    name: string(STR_GRF_NAME);
+    desc: string(STR_GRF_DESC);
+    url: string(STR_GRF_URL);
+    version: 1;
+    min_compatible_version: 1;
+    param 0 {
+        param_capacity {
+            type: int;
+            name: string(STR_PARAM_CAPACITY);
+            desc: string(STR_PARAM_CAPACITY_DESC);
+            min_value: 25;
+            max_value: 200;
+            def_value: 100;
+        }
+    }
+    param 1 {
+        param_purchase {
+            type: int;
+            name: string(STR_PARAM_PURCHASE);
+            desc: string(STR_PARAM_PURCHASE_DESC);
+            min_value: 25;
+            max_value: 300;
+            def_value: 100;
+        }
+    }
+    param 2 {
+        param_running {
+            type: int;
+            name: string(STR_PARAM_RUNNING);
+            desc: string(STR_PARAM_RUNNING_DESC);
+            min_value: 25;
+            max_value: 300;
+            def_value: 100;
+        }
+    }
+    param 3 {
+        param_mail_capacity_mode {
+            type: int;
+            name: string(STR_PARAM_MAIL_CAPACITY);
+            desc: string(STR_PARAM_MAIL_CAPACITY_DESC);
+            min_value: 0;
+            max_value: 3;
+            def_value: 1;
+            names: {
+                0: string(STR_PARAM_MAIL_X05);
+                1: string(STR_PARAM_MAIL_X1);
+                2: string(STR_PARAM_MAIL_X2);
+                3: string(STR_PARAM_MAIL_X4);
+            };
+        }
+    }
+    param 4 {
+        param_loading_mode {
+            type: int;
+            name: string(STR_PARAM_LOADING_RATE);
+            desc: string(STR_PARAM_LOADING_RATE_DESC);
+            min_value: 0;
+            max_value: 2;
+            def_value: 0;
+            names: {
+                0: string(STR_PARAM_X1);
+                1: string(STR_PARAM_X2);
+                2: string(STR_PARAM_X4);
+            };
+        }
+    }
+    param 5 {
+        param_cargo_age_mode {
+            type: int;
+            name: string(STR_PARAM_CARGO_AGE);
+            desc: string(STR_PARAM_CARGO_AGE_DESC);
+            min_value: 0;
+            max_value: 2;
+            def_value: 0;
+            names: {
+                0: string(STR_PARAM_X1);
+                1: string(STR_PARAM_X2);
+                2: string(STR_PARAM_X4);
+            };
+        }
+    }
+}
+
+cargotable {
+    PASS,
+    MAIL,
+    GOOD,
+    VALU,
+    GOLD,
+    DIAM,
+    FISH,
+    FOOD,
+    FRUT,
+    FRVG,
+    MILK,
+    SGBT
+}
+
+// ----------------------------------------------------------------------------
+// Sprite templates
+// ----------------------------------------------------------------------------
+template tpl_vehicle(fname) {
+    [  0, 0,  36, 160, -14, -80, fname]
+    [ 44, 0, 120, 116, -75, -72, fname]
+    [172, 0, 192,  80, -96, -62, fname]
+    [372, 0, 120, 116, -41, -72, fname]
+    [500, 0,  36, 160, -14, -80, fname]
+    [544, 0, 120, 116, -75, -72, fname]
+    [672, 0, 192,  80, -96, -62, fname]
+    [872, 0, 120, 116, -41, -72, fname]
+}
+
+// Tail car: swap row 1<->5, 2<->6, 3<->7, 4<->8
+template tpl_vehicle_flip(fname) {
+    [500, 0,  36, 160, -14, -80, fname]
+    [544, 0, 120, 116, -75, -72, fname]
+    [672, 0, 192,  80, -96, -62, fname]
+    [872, 0, 120, 116, -41, -72, fname]
+    [  0, 0,  36, 160, -14, -80, fname]
+    [ 44, 0, 120, 116, -75, -72, fname]
+    [172, 0, 192,  80, -96, -62, fname]
+    [372, 0, 120, 116, -41, -72, fname]
+}
+
+template tpl_purchase(fname) {
+    [672, 0, 192, 80, -96, -62, fname]
+}
+
+// Same 3/4 view as tpl_purchase, but taken from the opposite side.  Used for
+// liveries whose "flip" voxel model was made by rotating the whole car.
+template tpl_purchase_flip(fname) {
+    [172, 0, 192, 80, -96, -62, fname]
+}
+
+spriteset (empty_sprites, "gfx/empty.png") {
+    [0, 0, 2, 2, 0, 0, CROP]
+}
+
+// ----------------------------------------------------------------------------
+// TR08 head car sprites (3 liveries: A white/red, C Shanghai Maglev, G RZD)
+// ----------------------------------------------------------------------------
+spriteset (sp_head_tr08_A, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR08_head_A_white_red_32bpp.png")
+}
+spriteset (sp_head_tr08_tail_A, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle_flip("gfx/game_4x/TR08_head_A_white_red_32bpp.png")
+}
+spriteset (sp_purchase_head_tr08_A, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_purchase("gfx/game_4x/TR08_head_A_white_red_32bpp.png")
+}
+
+spriteset (sp_head_tr08_C, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR08_head_C_smt_orange_teal_32bpp.png")
+}
+spriteset (sp_head_tr08_tail_C, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle_flip("gfx/game_4x/TR08_head_C_smt_orange_teal_32bpp.png")
+}
+spriteset (sp_purchase_head_tr08_C, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_purchase("gfx/game_4x/TR08_head_C_smt_orange_teal_32bpp.png")
+}
+
+spriteset (sp_head_tr08_G, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR08_head_G_rzd_red_white_grey_32bpp.png")
+}
+spriteset (sp_head_tr08_tail_G, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle_flip("gfx/game_4x/TR08_head_G_rzd_red_white_grey_32bpp.png")
+}
+spriteset (sp_purchase_head_tr08_G, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_purchase("gfx/game_4x/TR08_head_G_rzd_red_white_grey_32bpp.png")
+}
+
+// ----------------------------------------------------------------------------
+// TR2012 head car sprites (9 liveries: A/B/C/D/Df/E/F/G/H)
+// ----------------------------------------------------------------------------
+spriteset (sp_head_t12_A, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR2012_head_A_white_red_32bpp.png")
+}
+spriteset (sp_head_t12_tail_A, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle_flip("gfx/game_4x/TR2012_head_A_white_red_32bpp.png")
+}
+spriteset (sp_purchase_head_t12_A, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_purchase("gfx/game_4x/TR2012_head_A_white_red_32bpp.png")
+}
+
+spriteset (sp_head_t12_B, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR2012_head_B_smt_orange_teal_32bpp.png")
+}
+spriteset (sp_head_t12_tail_B, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle_flip("gfx/game_4x/TR2012_head_B_smt_orange_teal_32bpp.png")
+}
+spriteset (sp_purchase_head_t12_B, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_purchase("gfx/game_4x/TR2012_head_B_smt_orange_teal_32bpp.png")
+}
+
+spriteset (sp_head_t12_C, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR2012_head_C_orange_yellow_32bpp.png")
+}
+spriteset (sp_head_t12_tail_C, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle_flip("gfx/game_4x/TR2012_head_C_orange_yellow_32bpp.png")
+}
+spriteset (sp_purchase_head_t12_C, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_purchase("gfx/game_4x/TR2012_head_C_orange_yellow_32bpp.png")
+}
+
+// TR2012 JNR185 green diagonal.
+//
+// The Df voxel model was made by rotating the whole car 180 degrees with the
+// paint pattern fixed in world space, so its rendered sheet already has the
+// body turned around (Df view d == D view d+4 for the body) while the paint
+// stays in the same world orientation (Df view d has the same stripe slope as
+// D view d).  Consequently:
+//   "looks like a head"  = tpl_vehicle_flip(Df sheet)
+//   "looks like a tail"  = tpl_vehicle(Df sheet)
+// which is the opposite of a paint-only variant such as TR08 H/Hf.
+//
+// Forward refit: head = D head,  tail = Df tail
+// Reverse refit: head = Df head, tail = D tail
+// This keeps the diagonal continuous over the whole train without any extra
+// per-vehicle refit for the rear cab.
+spriteset (sp_t12_D_head, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR2012_head_D_jnr185_green_diagonal_32bpp.png")
+}
+spriteset (sp_t12_D_tail, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle_flip("gfx/game_4x/TR2012_head_D_jnr185_green_diagonal_32bpp.png")
+}
+spriteset (sp_purchase_head_t12_D, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_purchase("gfx/game_4x/TR2012_head_D_jnr185_green_diagonal_32bpp.png")
+}
+
+spriteset (sp_t12_Df_head, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle_flip("gfx/game_4x/TR2012_head_D_jnr185_green_diagonal_flip_32bpp.png")
+}
+spriteset (sp_t12_Df_tail, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR2012_head_D_jnr185_green_diagonal_flip_32bpp.png")
+}
+spriteset (sp_purchase_head_t12_Df, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_purchase_flip("gfx/game_4x/TR2012_head_D_jnr185_green_diagonal_flip_32bpp.png")
+}
+
+// E: cream body / vermilion window band
+spriteset (sp_head_t12_E, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR2012_head_E_cream_vermilion_32bpp.png")
+}
+spriteset (sp_head_t12_tail_E, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle_flip("gfx/game_4x/TR2012_head_E_cream_vermilion_32bpp.png")
+}
+spriteset (sp_purchase_head_t12_E, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_purchase("gfx/game_4x/TR2012_head_E_cream_vermilion_32bpp.png")
+}
+
+// F: white body / indigo window band
+spriteset (sp_head_t12_F, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR2012_head_F_white_indigo_32bpp.png")
+}
+spriteset (sp_head_t12_tail_F, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle_flip("gfx/game_4x/TR2012_head_F_white_indigo_32bpp.png")
+}
+spriteset (sp_purchase_head_t12_F, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_purchase("gfx/game_4x/TR2012_head_F_white_indigo_32bpp.png")
+}
+
+// G: white body / company colour window band.
+// The 5th spriteset parameter is the 8bpp mask; without it OpenTTD draws the
+// grey placeholder that gorender writes into the 32bpp image.
+spriteset (sp_head_t12_G, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP,
+    "gfx/game_4x/TR2012_head_G_white_company_32bpp.png",
+    "gfx/game_4x/TR2012_head_G_white_company_mask.png") {
+    tpl_vehicle("gfx/game_4x/TR2012_head_G_white_company_32bpp.png")
+}
+spriteset (sp_head_t12_tail_G, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP,
+    "gfx/game_4x/TR2012_head_G_white_company_32bpp.png",
+    "gfx/game_4x/TR2012_head_G_white_company_mask.png") {
+    tpl_vehicle_flip("gfx/game_4x/TR2012_head_G_white_company_32bpp.png")
+}
+spriteset (sp_purchase_head_t12_G, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP,
+    "gfx/game_4x/TR2012_head_G_white_company_32bpp.png",
+    "gfx/game_4x/TR2012_head_G_white_company_mask.png") {
+    tpl_purchase("gfx/game_4x/TR2012_head_G_white_company_32bpp.png")
+}
+
+// H: Shanghai bus link livery
+spriteset (sp_head_t12_H, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR2012_head_H_shanghai_bus_32bpp.png")
+}
+spriteset (sp_head_t12_tail_H, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle_flip("gfx/game_4x/TR2012_head_H_shanghai_bus_32bpp.png")
+}
+spriteset (sp_purchase_head_t12_H, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_purchase("gfx/game_4x/TR2012_head_H_shanghai_bus_32bpp.png")
+}
+
+// ----------------------------------------------------------------------------
+// Intermediate car sprites
+// ----------------------------------------------------------------------------
+spriteset (sp_mid_tr08_A, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR08_mid_A_white_red_32bpp.png")
+}
+spriteset (sp_mid_tr08_C, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR08_mid_C_smt_orange_teal_32bpp.png")
+}
+spriteset (sp_mid_tr08_G, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR08_mid_G_rzd_red_white_grey_32bpp.png")
+}
+
+spriteset (sp_mid_t12_A, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR2012_mid_A_white_red_32bpp.png")
+}
+spriteset (sp_mid_t12_B, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR2012_mid_B_smt_orange_teal_32bpp.png")
+}
+spriteset (sp_mid_t12_C, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR2012_mid_C_orange_yellow_32bpp.png")
+}
+spriteset (sp_mid_t12_D, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR2012_mid_D_jnr185_green_diagonal_32bpp.png")
+}
+spriteset (sp_mid_t12_Dr, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle_flip("gfx/game_4x/TR2012_mid_D_jnr185_green_diagonal_32bpp.png")
+}
+spriteset (sp_mid_t12_E, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR2012_mid_E_cream_vermilion_32bpp.png")
+}
+spriteset (sp_mid_t12_F, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR2012_mid_F_white_indigo_32bpp.png")
+}
+spriteset (sp_mid_t12_G, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP,
+    "gfx/game_4x/TR2012_mid_G_white_company_32bpp.png",
+    "gfx/game_4x/TR2012_mid_G_white_company_mask.png") {
+    tpl_vehicle("gfx/game_4x/TR2012_mid_G_white_company_32bpp.png")
+}
+spriteset (sp_mid_t12_H, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR2012_mid_H_shanghai_bus_32bpp.png")
+}
+
+spriteset (sp_purchase_mid, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_purchase("gfx/game_4x/TR08_mid_A_white_red_32bpp.png")
+}
+
+// TR2015 passenger head liveries. The red dragon mid car reuses the TR08
+// white/red sheet; only the silver sword livery needs its own mid car sheet.
+spriteset (sp_t15_head_red_dragon, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR2015_head_red_dragon_32bpp.png")
+}
+spriteset (sp_t15_tail_red_dragon, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle_flip("gfx/game_4x/TR2015_head_red_dragon_32bpp.png")
+}
+spriteset (sp_purchase_t15_red_dragon, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_purchase("gfx/game_4x/TR2015_head_red_dragon_32bpp.png")
+}
+
+spriteset (sp_t15_head_silver_sword, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP,
+    "gfx/game_4x/TR2015_head_silver_sword_32bpp.png",
+    "gfx/game_4x/TR2015_head_silver_sword_mask.png") {
+    tpl_vehicle("gfx/game_4x/TR2015_head_silver_sword_32bpp.png")
+}
+spriteset (sp_t15_tail_silver_sword, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP,
+    "gfx/game_4x/TR2015_head_silver_sword_32bpp.png",
+    "gfx/game_4x/TR2015_head_silver_sword_mask.png") {
+    tpl_vehicle_flip("gfx/game_4x/TR2015_head_silver_sword_32bpp.png")
+}
+spriteset (sp_purchase_t15_silver_sword, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP,
+    "gfx/game_4x/TR2015_head_silver_sword_32bpp.png",
+    "gfx/game_4x/TR2015_head_silver_sword_mask.png") {
+    tpl_purchase("gfx/game_4x/TR2015_head_silver_sword_32bpp.png")
+}
+
+spriteset (sp_t15_mid_silver_sword, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP,
+    "gfx/game_4x/TR2015_mid_silver_sword_32bpp.png",
+    "gfx/game_4x/TR2015_mid_silver_sword_mask.png") {
+    tpl_vehicle("gfx/game_4x/TR2015_mid_silver_sword_32bpp.png")
+}
+
+// TR2015 Shanghai Metro link livery. The ordinary and ZEXL intermediate-car
+// sheets were refreshed on 2026-11-01. These sheets have no company-colour
+// mask, so only the 32bpp image is passed to OpenTTD.
+spriteset (sp_t15_head_shanghai_metro, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR2015_head_shanghai_metro_32bpp.png")
+}
+spriteset (sp_t15_tail_shanghai_metro, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle_flip("gfx/game_4x/TR2015_head_shanghai_metro_32bpp.png")
+}
+spriteset (sp_purchase_t15_shanghai_metro, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_purchase("gfx/game_4x/TR2015_head_shanghai_metro_32bpp.png")
+}
+
+spriteset (sp_t15_mid_shanghai_metro, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR2015_mid_shanghai_metro_32bpp.png")
+}
+spriteset (sp_t15_mid_shanghai_metro_zexl, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR2015_mid_shanghai_metro_zexl_32bpp.png")
+}
+
+// TR2015 freight and baggage/coach composites.
+spriteset (sp_t15_head_sspe_freight, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP,
+    "gfx/game_4x/TR2015_head_SSPE_freight_32bpp.png",
+    "gfx/game_4x/TR2015_head_SSPE_freight_mask.png") {
+    tpl_vehicle("gfx/game_4x/TR2015_head_SSPE_freight_32bpp.png")
+}
+spriteset (sp_t15_tail_sspe_freight, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP,
+    "gfx/game_4x/TR2015_head_SSPE_freight_32bpp.png",
+    "gfx/game_4x/TR2015_head_SSPE_freight_mask.png") {
+    tpl_vehicle_flip("gfx/game_4x/TR2015_head_SSPE_freight_32bpp.png")
+}
+spriteset (sp_purchase_t15_sspe_freight, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP,
+    "gfx/game_4x/TR2015_head_SSPE_freight_32bpp.png",
+    "gfx/game_4x/TR2015_head_SSPE_freight_mask.png") {
+    tpl_purchase("gfx/game_4x/TR2015_head_SSPE_freight_32bpp.png")
+}
+spriteset (sp_t15_head_red_dragon_freight, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR2015_head_red_dragon_freight_32bpp.png")
+}
+spriteset (sp_t15_tail_red_dragon_freight, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle_flip("gfx/game_4x/TR2015_head_red_dragon_freight_32bpp.png")
+}
+spriteset (sp_purchase_t15_red_dragon_freight, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_purchase("gfx/game_4x/TR2015_head_red_dragon_freight_32bpp.png")
+}
+
+spriteset (sp_t15_mid_sspe_freight, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP,
+    "gfx/game_4x/TR2015_mid_SSPE_freight_32bpp.png",
+    "gfx/game_4x/TR2015_mid_SSPE_freight_mask.png") {
+    tpl_vehicle("gfx/game_4x/TR2015_mid_SSPE_freight_32bpp.png")
+}
+spriteset (sp_purchase_t15_sspe_freight_mid, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP,
+    "gfx/game_4x/TR2015_mid_SSPE_freight_32bpp.png",
+    "gfx/game_4x/TR2015_mid_SSPE_freight_mask.png") {
+    tpl_purchase("gfx/game_4x/TR2015_mid_SSPE_freight_32bpp.png")
+}
+spriteset (sp_t15_mid_red_dragon_freight, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR2015_mid_red_dragon_freight_32bpp.png")
+}
+spriteset (sp_purchase_t15_red_dragon_freight_mid, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_purchase("gfx/game_4x/TR2015_mid_red_dragon_freight_32bpp.png")
+}
+spriteset (sp_t15_mid_red_dragon_refrigerated, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR2015_mid_red_dragon_refrigerated_32bpp.png")
+}
+spriteset (sp_purchase_t15_red_dragon_refrigerated, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_purchase("gfx/game_4x/TR2015_mid_red_dragon_refrigerated_32bpp.png")
+}
+
+spriteset (sp_t15_mid_red_dragon_zexl, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/TR2015_mid_red_dragon_baggage_second_32bpp.png")
+}
+spriteset (sp_purchase_t15_red_dragon_zexl, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_purchase("gfx/game_4x/TR2015_mid_red_dragon_baggage_second_32bpp.png")
+}
+spriteset (sp_t15_mid_silver_sword_zexl, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP,
+    "gfx/game_4x/TR2015_mid_silver_sword_baggage_second_32bpp.png",
+    "gfx/game_4x/TR2015_mid_silver_sword_baggage_second_mask.png") {
+    tpl_vehicle("gfx/game_4x/TR2015_mid_silver_sword_baggage_second_32bpp.png")
+}
+
+// MR2015 (Maglevranger 2015) is a separate engineering train item.
+spriteset (sp_eng_mr2015, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle("gfx/game_4x/MR2015_eng_Maglevranger_32bpp.png")
+}
+spriteset (sp_eng_mr2015_tail, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_vehicle_flip("gfx/game_4x/MR2015_eng_Maglevranger_32bpp.png")
+}
+spriteset (sp_purchase_eng_mr2015, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
+    tpl_purchase("gfx/game_4x/MR2015_eng_Maglevranger_32bpp.png")
+}
+
+// ----------------------------------------------------------------------------
+// Shared callbacks
+// ----------------------------------------------------------------------------
+
+// 2 + 8 + 2 = 12 units = 0.75 tile.  Never exceed 8 units per part.
+switch (FEAT_TRAINS, SELF, sw_length_2_8_2, position_in_articulated_veh % 3) {
+    1: return 8;
+    return 2;
+}
+
+// PARENT resolves to the first vehicle of the train. Counting from there
+// gives a whole-consist result and avoids SELF's forward-only count_veh_id().
+switch (FEAT_TRAINS, PARENT, sw_parent_regular_head_parts,
+    count_veh_id(100) + count_veh_id(101) + count_veh_id(102) +
+    count_veh_id(106) + count_veh_id(107)) {
+    return;
+}
+
+switch (FEAT_TRAINS, PARENT, sw_parent_mr2015_parts,
+    count_veh_id(105)) {
+    return;
+}
+
+// True when the existing consist contains at least one non-MR2015 vehicle.
+switch (FEAT_TRAINS, PARENT, sw_parent_has_regular_vehicle,
+    num_vehs_in_consist > count_veh_id(105)) {
+    1: return 1;
+    return 0;
+}
+
+// 单头沿用原位置判断；双头时比较两者在整列中的相对位置。
+switch (FEAT_TRAINS, SELF, sw_single_head_at_end,
+    position_in_consist < 3) {
+    1: return 1;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_single_head_is_front,
+    position_in_consist_from_end < 3) {
+    1: sw_single_head_at_end;
+    return 1;
+}
+
+switch (FEAT_TRAINS, SELF, sw_head_is_front,
+    sw_parent_regular_head_parts()) {
+    3: sw_single_head_is_front;
+    6: return position_in_consist < position_in_consist_from_end;
+    return 1;
+}
+
+switch (FEAT_TRAINS, SELF, sw_std_head_start_stop,
+    (sw_parent_regular_head_parts() <= 6) &&
+    (sw_parent_regular_head_parts() == 3 ||
+     sw_parent_regular_head_parts() == 6) &&
+    !((num_vehs_in_consist > sw_parent_mr2015_parts()) &&
+      (sw_parent_mr2015_parts() > 6)) &&
+    !((sw_parent_regular_head_parts() == 6) &&
+      (num_vehs_in_consist - sw_parent_regular_head_parts() -
+       sw_parent_mr2015_parts() < 3))) {
+    1: return CB_RESULT_NO_TEXT;
+    return string(STR_ERROR_CONSIST);
+}
+
+// Mixed MR consists must put every engineering car at an outer end.
+switch (FEAT_TRAINS, SELF, sw_mr2015_start_stop,
+    (num_vehs_in_consist <= sw_parent_mr2015_parts()) ||
+    ((sw_parent_mr2015_parts() <= 6) &&
+     (position_in_consist < 3 || position_in_consist_from_end < 3))) {
+    1: return CB_RESULT_NO_TEXT;
+    return string(STR_ERROR_CONSIST);
+}
+
+switch (FEAT_TRAINS, SELF, sw_mail_capacity_scale, param_mail_capacity_mode) {
+    0: return 50;
+    1: return 100;
+    2: return 200;
+    return 400;
+}
+
+switch (FEAT_TRAINS, SELF, sw_loading_scale, param_loading_mode) {
+    0: return 1;
+    1: return 2;
+    return 4;
+}
+
+switch (FEAT_TRAINS, SELF, sw_cargo_age_scale, param_cargo_age_mode) {
+    0: return 1;
+    1: return 2;
+    return 4;
+}
+
+// Power callbacks are given in HP (the unit of the power callback).
+// Only articulated part 0 is powered, the other two parts report 0 so the
+// power of an item is not counted three times.
+//   3600 kW = 4829 hp
+//   3000 kW = 4023 hp
+//   2400 kW = 3218 hp
+//   2000 kW = 2682 hp
+//   6400 kW = 8582 hp
+//   4800 kW = 6437 hp
+switch (FEAT_TRAINS, SELF, sw_power_head_tr08_base, position_in_articulated_veh % 3) {
+    0: return 4829;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_power_head_tr2012_base, position_in_articulated_veh % 3) {
+    0: return 4023;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_power_mid_tr08_base, position_in_articulated_veh % 3) {
+    0: return 3218;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_power_mid_tr2012_base, position_in_articulated_veh % 3) {
+    0: return 2682;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_power_freight_head_base, position_in_articulated_veh % 3) {
+    0: return 6437;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_power_freight_mid_base, position_in_articulated_veh % 3) {
+    0: return 6437;
+    return 0;
+}
+
+// MR2015 presence is checked from the front of the whole consist.
+switch (FEAT_TRAINS, SELF, sw_mr2015_present,
+    sw_parent_mr2015_parts() > 0) {
+    1: return 1;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_power_head_tr08, sw_mr2015_present()) {
+    1: return 0;
+    sw_power_head_tr08_base;
+}
+
+switch (FEAT_TRAINS, SELF, sw_power_head_tr2012, sw_mr2015_present()) {
+    1: return 0;
+    sw_power_head_tr2012_base;
+}
+
+switch (FEAT_TRAINS, SELF, sw_power_mid_tr08, sw_mr2015_present()) {
+    1: return 0;
+    sw_power_mid_tr08_base;
+}
+
+switch (FEAT_TRAINS, SELF, sw_power_mid_tr2012, sw_mr2015_present()) {
+    1: return 0;
+    sw_power_mid_tr2012_base;
+}
+
+switch (FEAT_TRAINS, SELF, sw_power_tr2015_freight_head, sw_mr2015_present()) {
+    1: return 0;
+    sw_power_freight_head_base;
+}
+
+switch (FEAT_TRAINS, SELF, sw_power_tr2015_freight_mid, sw_mr2015_present()) {
+    1: return 0;
+    sw_power_freight_mid_base;
+}
+
+switch (FEAT_TRAINS, SELF, sw_traction_head_tr08_base,
+    position_in_articulated_veh % 3) {
+    0: return 89;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_traction_head_tr2012_base,
+    position_in_articulated_veh % 3) {
+    0: return 82;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_traction_tr2015_head_base,
+    position_in_articulated_veh % 3) {
+    0: return 89;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_traction_head_tr08, sw_mr2015_present()) {
+    1: return 0;
+    sw_traction_head_tr08_base;
+}
+
+switch (FEAT_TRAINS, SELF, sw_traction_head_tr2012, sw_mr2015_present()) {
+    1: return 0;
+    sw_traction_head_tr2012_base;
+}
+
+switch (FEAT_TRAINS, SELF, sw_traction_tr2015_head, sw_mr2015_present()) {
+    1: return 0;
+    sw_traction_tr2015_head_base;
+}
+
+switch (FEAT_TRAINS, SELF, sw_traction_mid_tr08, sw_mr2015_present()) {
+    1: return 0;
+    return 89;
+}
+
+switch (FEAT_TRAINS, SELF, sw_traction_mid_tr2012, sw_mr2015_present()) {
+    1: return 0;
+    return 82;
+}
+
+switch (FEAT_TRAINS, SELF, sw_traction_tr2015_mid, sw_mr2015_present()) {
+    1: return 0;
+    return 89;
+}
+
+switch (FEAT_TRAINS, SELF, sw_traction_freight, sw_mr2015_present()) {
+    1: return 0;
+    return 89;
+}
+
+switch (FEAT_TRAINS, SELF, sw_power_mr2015, position_in_articulated_veh % 3) {
+    0: return 8582;
+    return 0;
+}
+
+// MR2015 runs at 160 km/h alone or with other MR2015s. A mixed consist is
+// limited to 100 km/h by this single vehicle; OpenTTD uses the slowest unit.
+switch (FEAT_TRAINS, SELF, sw_speed_mr2015,
+    num_vehs_in_consist > sw_parent_mr2015_parts()) {
+    1: return 100;
+    return 160;
+}
+
+switch (FEAT_TRAINS, SELF, sw_cap_mr2015, position_in_articulated_veh % 3) {
+    1: return (8 * param_capacity) / 100;
+    return 0;
+}
+
+// TR2015 passenger head. The head itself is first-class only; refits select
+// the livery. The class of the train is determined by the intermediate cars
+// attached behind it.
+switch (FEAT_TRAINS, SELF, sw_tr2015_head_subtype_text, cargo_subtype) {
+    0: return string(STR_SUB_T15_RED_DRAGON_S);
+    1: return string(STR_SUB_T15_SILVER_SWORD_S);
+    2: return string(STR_SUB_T15_SHANGHAI_METRO_S);
+    return CB_RESULT_NO_TEXT;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2015_head_livery_graphics, cargo_subtype) {
+    0: sp_t15_head_red_dragon;
+    1: sp_t15_head_silver_sword;
+    2: sp_t15_head_shanghai_metro;
+    sp_t15_head_red_dragon;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2015_head_tail_graphics, cargo_subtype) {
+    0: sp_t15_tail_red_dragon;
+    1: sp_t15_tail_silver_sword;
+    2: sp_t15_tail_shanghai_metro;
+    sp_t15_tail_red_dragon;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2015_head_purchase, cargo_subtype) {
+    0: sp_purchase_t15_red_dragon;
+    1: sp_purchase_t15_silver_sword;
+    2: sp_purchase_t15_shanghai_metro;
+    sp_purchase_t15_red_dragon;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2015_head_direction, sw_head_is_front()) {
+    1: sw_tr2015_head_livery_graphics;
+    sw_tr2015_head_tail_graphics;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2015_head_graphics,
+    position_in_articulated_veh % 3) {
+    1: sw_tr2015_head_direction;
+    empty_sprites;
+}
+
+// The red dragon mid car reuses the TR08 white/red sheet. Only silver sword
+// has a TR2015-specific intermediate-car sheet.
+switch (FEAT_TRAINS, PARENT, sw_parent_tr2015_mid_livery, cargo_subtype) {
+    0: sp_mid_tr08_A;
+    1: sp_t15_mid_silver_sword;
+    2: sp_t15_mid_shanghai_metro;
+    sp_mid_tr08_A;
+}
+
+switch (FEAT_TRAINS, SELF, sw_ov_tr2015_mid_graphics,
+    position_in_articulated_veh % 3) {
+    1: sw_parent_tr2015_mid_livery;
+    empty_sprites;
+}
+
+// Passenger TR2015: first-class head, 12 passengers.
+switch (FEAT_TRAINS, SELF, sw_power_tr2015_head_base,
+    position_in_articulated_veh % 3) {
+    0: return 4829;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_power_tr2015_head, sw_mr2015_present()) {
+    1: return 0;
+    sw_power_tr2015_head_base;
+}
+
+switch (FEAT_TRAINS, SELF, sw_cap_tr2015_head,
+    position_in_articulated_veh % 3) {
+    1: return (12 * param_capacity) / 100;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_age_tr2015_head,
+    position_in_articulated_veh % 3) {
+    1: return 1200 * sw_cargo_age_scale();
+    return 0;
+}
+
+// TR2015 intermediate cars. The selected head class determines which generic
+// intermediate-car item may be attached.
+switch (FEAT_TRAINS, SELF, sw_power_tr2015_mid_base,
+    position_in_articulated_veh % 3) {
+    0: return 3218;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_power_tr2015_mid, sw_mr2015_present()) {
+    1: return 0;
+    sw_power_tr2015_mid_base;
+}
+
+switch (FEAT_TRAINS, SELF, sw_cap_tr2015_mid_first,
+    position_in_articulated_veh % 3) {
+    1: return (30 * param_capacity) / 100;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_cap_tr2015_mid_second,
+    position_in_articulated_veh % 3) {
+    1: return (120 * param_capacity) / 100;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_age_tr2015_mid_first,
+    position_in_articulated_veh % 3) {
+    1: return 1200 * sw_cargo_age_scale();
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_age_tr2015_mid_second,
+    position_in_articulated_veh % 3) {
+    1: return 250 * sw_cargo_age_scale();
+    return 0;
+}
+
+// TR2015 freight liveries. The head and every freight car use SELF scope so
+// their cargo type and livery subtype can be selected independently.
+switch (FEAT_TRAINS, SELF, sw_tr2015_freight_subtype_text, cargo_subtype) {
+    0: return string(STR_SUB_T15_RED_DRAGON_FREIGHT);
+    1: return string(STR_SUB_T15_SSPE_FREIGHT);
+    return CB_RESULT_NO_TEXT;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2015_freight_head_livery, cargo_subtype) {
+    0: sp_t15_head_red_dragon_freight;
+    1: sp_t15_head_sspe_freight;
+    sp_t15_head_red_dragon_freight;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2015_freight_head_tail, cargo_subtype) {
+    0: sp_t15_tail_red_dragon_freight;
+    1: sp_t15_tail_sspe_freight;
+    sp_t15_tail_red_dragon_freight;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2015_freight_head_purchase, cargo_subtype) {
+    0: sp_purchase_t15_red_dragon_freight;
+    1: sp_purchase_t15_sspe_freight;
+    sp_purchase_t15_red_dragon_freight;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2015_freight_head_direction,
+    sw_head_is_front()) {
+    1: sw_tr2015_freight_head_livery;
+    sw_tr2015_freight_head_tail;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2015_freight_head_graphics,
+    position_in_articulated_veh % 3) {
+    1: sw_tr2015_freight_head_direction;
+    empty_sprites;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2015_freight_mid_livery, cargo_subtype) {
+    0: sp_t15_mid_red_dragon_freight;
+    1: sp_t15_mid_sspe_freight;
+    sp_t15_mid_red_dragon_freight;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2015_freight_mid_purchase, cargo_subtype) {
+    0: sp_purchase_t15_red_dragon_freight_mid;
+    1: sp_purchase_t15_sspe_freight_mid;
+    sp_purchase_t15_red_dragon_freight_mid;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2015_freight_mid_graphics,
+    position_in_articulated_veh % 3) {
+    1: sw_tr2015_freight_mid_livery;
+    empty_sprites;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2015_refrigerated_graphics,
+    position_in_articulated_veh % 3) {
+    1: sp_t15_mid_red_dragon_refrigerated;
+    empty_sprites;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2015_refrigerated_subtype_text,
+    cargo_subtype) {
+    0: return string(STR_SUB_T15_RED_DRAGON_FREIGHT);
+    return CB_RESULT_NO_TEXT;
+}
+
+switch (FEAT_TRAINS, PARENT, sw_parent_tr2015_zexl_livery, cargo_subtype) {
+    0: sp_t15_mid_red_dragon_zexl;
+    1: sp_t15_mid_silver_sword_zexl;
+    2: sp_t15_mid_shanghai_metro_zexl;
+    sp_t15_mid_red_dragon_zexl;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2015_zexl_passenger_graphics,
+    position_in_articulated_veh % 3) {
+    1: sw_parent_tr2015_zexl_livery;
+    empty_sprites;
+}
+
+switch (FEAT_TRAINS, SELF, sw_cap_tr2015_freight_head_cargo,
+    cargo_type_in_veh) {
+    MAIL: return (80 * sw_mail_capacity_scale()) / 100;
+    return 40;
+}
+
+switch (FEAT_TRAINS, SELF, sw_cap_tr2015_freight_head,
+    position_in_articulated_veh % 3) {
+    1: sw_cap_tr2015_freight_head_cargo;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_loading_tr2015_freight_head_cargo,
+    cargo_type_in_veh) {
+    MAIL: return 40 * sw_loading_scale();
+    return 10 * sw_loading_scale();
+}
+
+switch (FEAT_TRAINS, SELF, sw_loading_tr2015_freight_head,
+    position_in_articulated_veh % 3) {
+    1: sw_loading_tr2015_freight_head_cargo;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_age_tr2015_freight_head_cargo,
+    cargo_type_in_veh) {
+    MAIL: return 370 * sw_cargo_age_scale();
+    return 250 * sw_cargo_age_scale();
+}
+
+switch (FEAT_TRAINS, SELF, sw_age_tr2015_freight_head,
+    position_in_articulated_veh % 3) {
+    1: sw_age_tr2015_freight_head_cargo;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_cap_tr2015_freight_mid_cargo,
+    cargo_type_in_veh) {
+    MAIL: return (160 * sw_mail_capacity_scale()) / 100;
+    return 80;
+}
+
+switch (FEAT_TRAINS, SELF, sw_cap_tr2015_freight_mid,
+    position_in_articulated_veh % 3) {
+    1: sw_cap_tr2015_freight_mid_cargo;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_loading_tr2015_freight_mid_cargo,
+    cargo_type_in_veh) {
+    MAIL: return 40 * sw_loading_scale();
+    return 20 * sw_loading_scale();
+}
+
+switch (FEAT_TRAINS, SELF, sw_loading_tr2015_freight_mid,
+    position_in_articulated_veh % 3) {
+    1: sw_loading_tr2015_freight_mid_cargo;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_age_tr2015_freight_mid_cargo,
+    cargo_type_in_veh) {
+    MAIL: return 370 * sw_cargo_age_scale();
+    return 250 * sw_cargo_age_scale();
+}
+
+switch (FEAT_TRAINS, SELF, sw_age_tr2015_freight_mid,
+    position_in_articulated_veh % 3) {
+    1: sw_age_tr2015_freight_mid_cargo;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_cap_tr2015_refrigerated,
+    position_in_articulated_veh % 3) {
+    1: return 80;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_loading_tr2015_refrigerated,
+    position_in_articulated_veh % 3) {
+    1: return 20 * sw_loading_scale();
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_age_tr2015_refrigerated,
+    position_in_articulated_veh % 3) {
+    1: return 1600 * sw_cargo_age_scale();
+    return 0;
+}
+
+// Baggage/second-class composite: part 0 is mail, part 1 is passenger,
+// and part 2 is an empty spacer with the same passenger item.
+switch (FEAT_TRAINS, SELF, sw_cap_tr2015_zexl_mail,
+    position_in_articulated_veh % 3) {
+    0: return (80 * sw_mail_capacity_scale()) / 100;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_loading_tr2015_zexl_mail,
+    position_in_articulated_veh % 3) {
+    0: return 20 * sw_loading_scale();
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_age_tr2015_zexl_mail,
+    position_in_articulated_veh % 3) {
+    0: return 400 * sw_cargo_age_scale();
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_cap_tr2015_zexl_passenger,
+    position_in_articulated_veh % 3) {
+    1: return (60 * param_capacity) / 100;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_loading_tr2015_zexl_passenger,
+    position_in_articulated_veh % 3) {
+    1: return 15 * sw_loading_scale();
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_age_tr2015_zexl_passenger,
+    position_in_articulated_veh % 3) {
+    1: return 250 * sw_cargo_age_scale();
+    return 0;
+}
+
+// MR2015 graphics automatically swap to the reversed sprite at the rear.
+switch (FEAT_TRAINS, SELF, sw_eng_mr2015_front_position,
+    position_in_articulated_veh % 3) {
+    1: sp_eng_mr2015;
+    empty_sprites;
+}
+
+switch (FEAT_TRAINS, SELF, sw_eng_mr2015_rear_position,
+    position_in_articulated_veh % 3) {
+    1: sp_eng_mr2015_tail;
+    empty_sprites;
+}
+
+switch (FEAT_TRAINS, SELF, sw_eng_mr2015_alone_check,
+    position_in_consist < 3) {
+    1: sw_eng_mr2015_front_position;
+    sw_eng_mr2015_rear_position;
+}
+
+switch (FEAT_TRAINS, SELF, sw_eng_mr2015_graphics,
+    position_in_consist_from_end < 3) {
+    1: sw_eng_mr2015_alone_check;
+    sw_eng_mr2015_front_position;
+}
+
+switch (FEAT_TRAINS, SELF, sw_mr2015_articulated, extra_callback_info1) {
+    1..2: return maglevranger_2015;
+    return CB_RESULT_NO_MORE_ARTICULATED_PARTS;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2015_articulated, extra_callback_info1) {
+    1..2: return tr2015_head;
+    return CB_RESULT_NO_MORE_ARTICULATED_PARTS;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2015_freight_head_articulated,
+    extra_callback_info1) {
+    1..2: return tr2015_freight_head;
+    return CB_RESULT_NO_MORE_ARTICULATED_PARTS;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2015_freight_mid_articulated,
+    extra_callback_info1) {
+    1..2: return tr2015_freight_mid;
+    return CB_RESULT_NO_MORE_ARTICULATED_PARTS;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2015_refrigerated_articulated,
+    extra_callback_info1) {
+    1..2: return tr2015_refrigerated;
+    return CB_RESULT_NO_MORE_ARTICULATED_PARTS;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2015_zexl_articulated,
+    extra_callback_info1) {
+    1..2: return tr2015_zexl_passenger;
+    return CB_RESULT_NO_MORE_ARTICULATED_PARTS;
+}
+
+// Head car capacity (only the middle part carries the passenger compartment)
+switch (FEAT_TRAINS, SELF, sw_cap_tr08_head_first, position_in_articulated_veh % 3) {
+    1: return (60 * param_capacity) / 100;
+    return 0;
+}
+switch (FEAT_TRAINS, SELF, sw_cap_tr08_head_second, position_in_articulated_veh % 3) {
+    1: return (90 * param_capacity) / 100;
+    return 0;
+}
+switch (FEAT_TRAINS, SELF, sw_cap_tr2012_head, position_in_articulated_veh % 3) {
+    1: return (150 * param_capacity) / 100;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_age_tr08_head_first, position_in_articulated_veh % 3) {
+    1: return 400 * sw_cargo_age_scale();
+    return 0;
+}
+switch (FEAT_TRAINS, SELF, sw_age_tr08_head_second, position_in_articulated_veh % 3) {
+    1: return 250 * sw_cargo_age_scale();
+    return 0;
+}
+switch (FEAT_TRAINS, SELF, sw_age_tr2012_head, position_in_articulated_veh % 3) {
+    1: return 200 * sw_cargo_age_scale();
+    return 0;
+}
+
+// Intermediate car capacity / age, used from the livery_override blocks.
+// mid_first is only allowed behind TR08 heads.
+switch (FEAT_TRAINS, SELF, sw_cap_mid_first, position_in_articulated_veh % 3) {
+    1: return (80 * param_capacity) / 100;
+    return 0;
+}
+switch (FEAT_TRAINS, SELF, sw_cap_mid_second_tr08, position_in_articulated_veh % 3) {
+    1: return (120 * param_capacity) / 100;
+    return 0;
+}
+switch (FEAT_TRAINS, SELF, sw_cap_mid_second_tr2012, position_in_articulated_veh % 3) {
+    1: return (200 * param_capacity) / 100;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_age_mid_first, position_in_articulated_veh % 3) {
+    1: return 400 * sw_cargo_age_scale();
+    return 0;
+}
+switch (FEAT_TRAINS, SELF, sw_age_mid_second_tr08, position_in_articulated_veh % 3) {
+    1: return 250 * sw_cargo_age_scale();
+    return 0;
+}
+switch (FEAT_TRAINS, SELF, sw_age_mid_second_tr2012, position_in_articulated_veh % 3) {
+    1: return 200 * sw_cargo_age_scale();
+    return 0;
+}
+
+// ----------------------------------------------------------------------------
+// TR08 head car graphics / livery selection
+// ----------------------------------------------------------------------------
+switch (FEAT_TRAINS, SELF, sw_tr08_head_subtype_text, cargo_subtype) {
+    0: return string(STR_SUB_TR08_A_F);
+    1: return string(STR_SUB_TR08_C_F);
+    2: return string(STR_SUB_TR08_G_F);
+    return string(STR_SUB_TR08_A_F);
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr08_head_subtype_text_second, cargo_subtype) {
+    0: return string(STR_SUB_TR08_A_S);
+    1: return string(STR_SUB_TR08_C_S);
+    2: return string(STR_SUB_TR08_G_S);
+    return string(STR_SUB_TR08_A_S);
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr08_head_livery_graphics, cargo_subtype) {
+    0: sp_head_tr08_A;
+    1: sp_head_tr08_C;
+    2: sp_head_tr08_G;
+    sp_head_tr08_A;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr08_head_tail_graphics, cargo_subtype) {
+    0: sp_head_tr08_tail_A;
+    1: sp_head_tr08_tail_C;
+    2: sp_head_tr08_tail_G;
+    sp_head_tr08_tail_A;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr08_head_purchase, cargo_subtype) {
+    0: sp_purchase_head_tr08_A;
+    1: sp_purchase_head_tr08_C;
+    2: sp_purchase_head_tr08_G;
+    sp_purchase_head_tr08_A;
+}
+
+// Single-head trains stay forward. For two heads, compare their positions
+// from both ends; engineering cars outside the train do not matter.
+switch (FEAT_TRAINS, SELF, sw_tr08_head_direction, sw_head_is_front()) {
+    1: sw_tr08_head_livery_graphics;
+    sw_tr08_head_tail_graphics;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr08_head_graphics,
+    position_in_articulated_veh % 3) {
+    1: sw_tr08_head_direction;
+    empty_sprites;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr08_head_articulated, extra_callback_info1) {
+    1..2: return tr08_head_first;
+    return CB_RESULT_NO_MORE_ARTICULATED_PARTS;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr08_head_second_articulated, extra_callback_info1) {
+    1..2: return tr08_head_second;
+    return CB_RESULT_NO_MORE_ARTICULATED_PARTS;
+}
+
+// ----------------------------------------------------------------------------
+// TR2012 head car graphics / livery selection
+// ----------------------------------------------------------------------------
+switch (FEAT_TRAINS, SELF, sw_tr2012_head_livery_graphics, cargo_subtype) {
+    0: sp_head_t12_A;
+    1: sp_head_t12_B;
+    2: sp_head_t12_C;
+    3: sp_t12_D_head;
+    4: sp_t12_Df_head;
+    5: sp_head_t12_E;
+    6: sp_head_t12_F;
+    7: sp_head_t12_G;
+    8: sp_head_t12_H;
+    sp_head_t12_A;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2012_head_tail_graphics, cargo_subtype) {
+    0: sp_head_t12_tail_A;
+    1: sp_head_t12_tail_B;
+    2: sp_head_t12_tail_C;
+    3: sp_t12_Df_tail;
+    4: sp_t12_D_tail;
+    5: sp_head_t12_tail_E;
+    6: sp_head_t12_tail_F;
+    7: sp_head_t12_tail_G;
+    8: sp_head_t12_tail_H;
+    sp_head_t12_tail_A;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2012_head_purchase, cargo_subtype) {
+    0: sp_purchase_head_t12_A;
+    1: sp_purchase_head_t12_B;
+    2: sp_purchase_head_t12_C;
+    3: sp_purchase_head_t12_D;
+    4: sp_purchase_head_t12_Df;
+    5: sp_purchase_head_t12_E;
+    6: sp_purchase_head_t12_F;
+    7: sp_purchase_head_t12_G;
+    8: sp_purchase_head_t12_H;
+    sp_purchase_head_t12_A;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2012_head_subtype_text, cargo_subtype) {
+    0: return string(STR_SUB_T12_A_S);
+    1: return string(STR_SUB_T12_B_S);
+    2: return string(STR_SUB_T12_C_S);
+    3: return string(STR_SUB_T12_D_S);
+    4: return string(STR_SUB_T12_Df_S);
+    5: return string(STR_SUB_T12_E_S);
+    6: return string(STR_SUB_T12_F_S);
+    7: return string(STR_SUB_T12_G_S);
+    8: return string(STR_SUB_T12_H_S);
+    return string(STR_SUB_T12_A_S);
+}
+
+// TR2012 uses the same two-head position comparison as TR08.
+switch (FEAT_TRAINS, SELF, sw_tr2012_head_direction, sw_head_is_front()) {
+    1: sw_tr2012_head_livery_graphics;
+    sw_tr2012_head_tail_graphics;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2012_head_graphics,
+    position_in_articulated_veh % 3) {
+    1: sw_tr2012_head_direction;
+    empty_sprites;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2012_head_articulated, extra_callback_info1) {
+    1..2: return tr2012_head;
+    return CB_RESULT_NO_MORE_ARTICULATED_PARTS;
+}
+
+// ----------------------------------------------------------------------------
+// Intermediate car graphics
+// ----------------------------------------------------------------------------
+// Standalone (not attached to a head car): TR08 white/red, no capacity,
+// no power, no speed.  The item is meant to be used inside a train only.
+switch (FEAT_TRAINS, SELF, sw_mid_standalone, position_in_articulated_veh % 3) {
+    1: sp_mid_tr08_A;
+    empty_sprites;
+}
+
+// The livery always follows the leading head car (PARENT scope reads the
+// cargo_subtype of the front vehicle of the consist).
+switch (FEAT_TRAINS, PARENT, sw_parent_tr08_mid_livery, cargo_subtype) {
+    0: sp_mid_tr08_A;
+    1: sp_mid_tr08_C;
+    2: sp_mid_tr08_G;
+    sp_mid_tr08_A;
+}
+
+switch (FEAT_TRAINS, PARENT, sw_parent_tr2012_mid_livery, cargo_subtype) {
+    0: sp_mid_t12_A;
+    1: sp_mid_t12_B;
+    2: sp_mid_t12_C;
+    3: sp_mid_t12_D;
+    4: sp_mid_t12_Dr;
+    5: sp_mid_t12_E;
+    6: sp_mid_t12_F;
+    7: sp_mid_t12_G;
+    8: sp_mid_t12_H;
+    sp_mid_t12_A;
+}
+
+switch (FEAT_TRAINS, SELF, sw_ov_tr08_mid_graphics, position_in_articulated_veh % 3) {
+    1: sw_parent_tr08_mid_livery;
+    empty_sprites;
+}
+
+switch (FEAT_TRAINS, SELF, sw_ov_tr2012_mid_graphics, position_in_articulated_veh % 3) {
+    1: sw_parent_tr2012_mid_livery;
+    empty_sprites;
+}
+
+switch (FEAT_TRAINS, SELF, sw_mid_first_articulated, extra_callback_info1) {
+    1..2: return mid_first;
+    return CB_RESULT_NO_MORE_ARTICULATED_PARTS;
+}
+
+switch (FEAT_TRAINS, SELF, sw_mid_second_articulated, extra_callback_info1) {
+    1..2: return mid_second;
+    return CB_RESULT_NO_MORE_ARTICULATED_PARTS;
+}
+
+// ----------------------------------------------------------------------------
+// Attach rules
+// ----------------------------------------------------------------------------
+// In can_attach_wagon, PARENT is the existing train before the candidate
+// wagon. This is the reliable scope for counting already-coupled MR2015s.
+switch (FEAT_TRAINS, PARENT, sw_parent_is_mr2015, vehicle_type_id) {
+    maglevranger_2015: return 1;
+    return 0;
+}
+
+// The first MR2015 in a mixed consist must itself be at an outer end.
+switch (FEAT_TRAINS, SELF, sw_mr2015_attach_first,
+    (position_in_consist < 3) || (position_in_consist_from_end < 3)) {
+    1: return CB_RESULT_ATTACH_ALLOW;
+    return CB_RESULT_ATTACH_DISALLOW;
+}
+
+// If the existing MR2015 is at the front, the second one goes at the rear.
+switch (FEAT_TRAINS, SELF, sw_mr2015_attach_second_rear,
+    position_in_consist_from_end < 3) {
+    1: return CB_RESULT_ATTACH_ALLOW;
+    return CB_RESULT_ATTACH_DISALLOW;
+}
+
+// Conversely, an existing rear MR2015 allows the second one at the front.
+switch (FEAT_TRAINS, SELF, sw_mr2015_attach_second_front,
+    position_in_consist < 3) {
+    1: return CB_RESULT_ATTACH_ALLOW;
+    return CB_RESULT_ATTACH_DISALLOW;
+}
+
+switch (FEAT_TRAINS, SELF, sw_mr2015_attach_second,
+    sw_parent_is_mr2015()) {
+    1: sw_mr2015_attach_second_rear;
+    sw_mr2015_attach_second_front;
+}
+
+// Existing MR2015s are represented by three physical parts per unit.
+// 0 = first unit, 3 = one existing unit, 6 = two existing units.
+switch (FEAT_TRAINS, SELF, sw_mr2015_attach_mixed,
+    sw_parent_mr2015_parts()) {
+    0: sw_mr2015_attach_first;
+    3: sw_mr2015_attach_second;
+    return CB_RESULT_ATTACH_DISALLOW;
+}
+
+switch (FEAT_TRAINS, SELF, sw_mr2015_attach_allowed,
+    sw_parent_has_regular_vehicle()) {
+    1: sw_mr2015_attach_mixed;
+    return CB_RESULT_ATTACH_ALLOW;
+}
+
+// Do not permit the first regular vehicle to turn a pure MR2015 consist of
+// more than two units into an invalid mixed consist.
+switch (FEAT_TRAINS, SELF, sw_regular_attach_allowed,
+    sw_parent_mr2015_parts()) {
+    0..6: return CB_RESULT_ATTACH_ALLOW;
+    return CB_RESULT_ATTACH_DISALLOW;
+}
+
+switch (FEAT_TRAINS, SELF, sw_regular_head_attach_allowed,
+    sw_parent_regular_head_parts()) {
+    0: sw_regular_attach_allowed;
+    3: sw_regular_attach_allowed;
+    return CB_RESULT_ATTACH_DISALLOW;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr08_can_attach, vehicle_type_id) {
+    tr08_head_first: sw_regular_head_attach_allowed;
+    tr08_head_second: sw_regular_head_attach_allowed;
+    tr2012_head: sw_regular_head_attach_allowed;
+    mid_first: sw_regular_attach_allowed;
+    mid_second: sw_regular_attach_allowed;
+    maglevranger_2015: sw_mr2015_attach_allowed;
+    return CB_RESULT_ATTACH_DISALLOW;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2012_can_attach, vehicle_type_id) {
+    tr08_head_first: sw_regular_head_attach_allowed;
+    tr08_head_second: sw_regular_head_attach_allowed;
+    tr2012_head: sw_regular_head_attach_allowed;
+    mid_second: sw_regular_attach_allowed;
+    maglevranger_2015: sw_mr2015_attach_allowed;
+    return CB_RESULT_ATTACH_DISALLOW;
+}
+
+switch (FEAT_TRAINS, SELF, sw_mr2015_can_attach, vehicle_type_id) {
+    tr08_head_first: sw_regular_head_attach_allowed;
+    tr08_head_second: sw_regular_head_attach_allowed;
+    tr2012_head: sw_regular_head_attach_allowed;
+    mid_first: sw_regular_attach_allowed;
+    mid_second: sw_regular_attach_allowed;
+    tr2015_head: sw_regular_head_attach_allowed;
+    tr2015_freight_head: sw_regular_head_attach_allowed;
+    tr2015_freight_mid: sw_regular_attach_allowed;
+    tr2015_refrigerated: sw_regular_attach_allowed;
+    tr2015_zexl: sw_regular_attach_allowed;
+    maglevranger_2015: sw_mr2015_attach_allowed;
+    return CB_RESULT_ATTACH_DISALLOW;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2015_can_attach, vehicle_type_id) {
+    tr2015_head: sw_regular_head_attach_allowed;
+    maglevranger_2015: sw_mr2015_attach_allowed;
+    mid_first: sw_regular_attach_allowed;
+    mid_second: sw_regular_attach_allowed;
+    tr2015_zexl: sw_regular_attach_allowed;
+    // Reserved for a future dining-car item ID.
+    return CB_RESULT_ATTACH_DISALLOW;
+}
+
+switch (FEAT_TRAINS, SELF, sw_tr2015_freight_can_attach, vehicle_type_id) {
+    tr2015_freight_head: sw_regular_head_attach_allowed;
+    tr2015_freight_mid: sw_regular_attach_allowed;
+    tr2015_refrigerated: sw_regular_attach_allowed;
+    maglevranger_2015: sw_mr2015_attach_allowed;
+    return CB_RESULT_ATTACH_DISALLOW;
+}
+
+// ----------------------------------------------------------------------------
+// TR08 head car, first class
+// ----------------------------------------------------------------------------
+item (FEAT_TRAINS, tr08_head_first, 100) {
+    property {
+        name: string(STR_NAME_TR08_HEAD_FIRST);
+        sprite_id: SPRITE_ID_NEW_TRAIN;
+        misc_flags: bitmask(TRAIN_FLAG_MU);
+        engine_class: ENGINE_CLASS_MAGLEV;
+        climates_available: ALL_CLIMATES;
+        introduction_date: date(1999,6,1);
+        model_life: VEHICLE_NEVER_EXPIRES;
+        vehicle_life: 30;
+        track_type: MGLV;
+        refittable_cargo_classes: bitmask(CC_PASSENGERS);
+        non_refittable_cargo_classes: 0;
+        cargo_allow_refit: [PASS];
+        cargo_disallow_refit: [];
+        refit_cost: 0;
+        default_cargo_type: PASS;
+        ai_special_flag: AI_FLAG_PASSENGER;
+        // Must be non-zero: OpenTTD's Engine::CanCarryCargo() returns false
+        // when the Action 0 capacity property is 0, and then the capacity
+        // callback is never evaluated.  The real value comes from the
+        // cargo_capacity callback below.
+        cargo_capacity: 1;
+        loading_speed: ((16 * param_capacity) / 100) * (1 << param_loading_mode);
+        cargo_age_period: 400 * (1 << param_cargo_age_mode);
+        speed: 430 km/h;
+        power: 3600 kW;
+        weight: 52 ton;
+        tractive_effort_coefficient: 0.35;
+        cost_factor: (130 * param_purchase) / 100;
+        running_cost_base: RUNNING_COST_ELECTRIC;
+        running_cost_factor: (100 * param_running) / 100;
+        reliability_decay: 5;
+    }
+    graphics {
+        additional_text: string(STR_DESC_TR08);
+        can_attach_wagon: sw_tr08_can_attach;
+        start_stop: sw_std_head_start_stop;
+        cargo_subtype_text: sw_tr08_head_subtype_text;
+        default: sw_tr08_head_graphics;
+        purchase: sw_tr08_head_purchase;
+        articulated_part: sw_tr08_head_articulated;
+        length: sw_length_2_8_2;
+        cargo_capacity: sw_cap_tr08_head_first;
+        cargo_age_period: sw_age_tr08_head_first;
+        power: sw_power_head_tr08;
+        tractive_effort_coefficient: sw_traction_head_tr08;
+        // Purchase menu shows value * number of articulated parts, so divide
+        // by 3 to display the real 60 seats.
+        purchase_cargo_capacity: (60 * param_capacity) / 300;
+    }
+    livery_override(mid_first) {
+        default: sw_ov_tr08_mid_graphics;
+        length: sw_length_2_8_2;
+        articulated_part: sw_mid_first_articulated;
+        cargo_capacity: sw_cap_mid_first;
+        cargo_age_period: sw_age_mid_first;
+        loading_speed: ((24 * param_capacity) / 100) * (1 << param_loading_mode);
+        power: sw_power_mid_tr08;
+        weight: 48;
+        tractive_effort_coefficient: sw_traction_mid_tr08;
+        cost_factor: (85 * param_purchase) / 100;
+        running_cost_factor: (65 * param_running) / 100;
+    }
+    livery_override(mid_second) {
+        default: sw_ov_tr08_mid_graphics;
+        length: sw_length_2_8_2;
+        articulated_part: sw_mid_second_articulated;
+        cargo_capacity: sw_cap_mid_second_tr08;
+        cargo_age_period: sw_age_mid_second_tr08;
+        loading_speed: ((30 * param_capacity) / 100) * (1 << param_loading_mode);
+        power: sw_power_mid_tr08;
+        weight: 48;
+        tractive_effort_coefficient: sw_traction_mid_tr08;
+        cost_factor: (85 * param_purchase) / 100;
+        running_cost_factor: (65 * param_running) / 100;
+    }
+}
+
+// ----------------------------------------------------------------------------
+// TR08 head car, second class
+// ----------------------------------------------------------------------------
+item (FEAT_TRAINS, tr08_head_second, 101) {
+    property {
+        name: string(STR_NAME_TR08_HEAD_SECOND);
+        sprite_id: SPRITE_ID_NEW_TRAIN;
+        misc_flags: bitmask(TRAIN_FLAG_MU);
+        engine_class: ENGINE_CLASS_MAGLEV;
+        climates_available: ALL_CLIMATES;
+        introduction_date: date(1999,6,1);
+        model_life: VEHICLE_NEVER_EXPIRES;
+        vehicle_life: 30;
+        track_type: MGLV;
+        refittable_cargo_classes: bitmask(CC_PASSENGERS);
+        non_refittable_cargo_classes: 0;
+        cargo_allow_refit: [PASS];
+        cargo_disallow_refit: [];
+        refit_cost: 0;
+        default_cargo_type: PASS;
+        ai_special_flag: AI_FLAG_PASSENGER;
+        cargo_capacity: 1;
+        loading_speed: ((20 * param_capacity) / 100) * (1 << param_loading_mode);
+        cargo_age_period: 250 * (1 << param_cargo_age_mode);
+        speed: 430 km/h;
+        power: 3600 kW;
+        weight: 52 ton;
+        tractive_effort_coefficient: 0.35;
+        cost_factor: (130 * param_purchase) / 100;
+        running_cost_base: RUNNING_COST_ELECTRIC;
+        running_cost_factor: (100 * param_running) / 100;
+        reliability_decay: 5;
+    }
+    graphics {
+        additional_text: string(STR_DESC_TR08);
+        can_attach_wagon: sw_tr08_can_attach;
+        start_stop: sw_std_head_start_stop;
+        cargo_subtype_text: sw_tr08_head_subtype_text_second;
+        default: sw_tr08_head_graphics;
+        purchase: sw_tr08_head_purchase;
+        articulated_part: sw_tr08_head_second_articulated;
+        length: sw_length_2_8_2;
+        cargo_capacity: sw_cap_tr08_head_second;
+        cargo_age_period: sw_age_tr08_head_second;
+        power: sw_power_head_tr08;
+        tractive_effort_coefficient: sw_traction_head_tr08;
+        purchase_cargo_capacity: (90 * param_capacity) / 300;
+    }
+    livery_override(mid_first) {
+        default: sw_ov_tr08_mid_graphics;
+        length: sw_length_2_8_2;
+        articulated_part: sw_mid_first_articulated;
+        cargo_capacity: sw_cap_mid_first;
+        cargo_age_period: sw_age_mid_first;
+        loading_speed: ((24 * param_capacity) / 100) * (1 << param_loading_mode);
+        power: sw_power_mid_tr08;
+        weight: 48;
+        tractive_effort_coefficient: sw_traction_mid_tr08;
+        cost_factor: (85 * param_purchase) / 100;
+        running_cost_factor: (65 * param_running) / 100;
+    }
+    livery_override(mid_second) {
+        default: sw_ov_tr08_mid_graphics;
+        length: sw_length_2_8_2;
+        articulated_part: sw_mid_second_articulated;
+        cargo_capacity: sw_cap_mid_second_tr08;
+        cargo_age_period: sw_age_mid_second_tr08;
+        loading_speed: ((30 * param_capacity) / 100) * (1 << param_loading_mode);
+        power: sw_power_mid_tr08;
+        weight: 48;
+        tractive_effort_coefficient: sw_traction_mid_tr08;
+        cost_factor: (85 * param_purchase) / 100;
+        running_cost_factor: (65 * param_running) / 100;
+    }
+}
+
+// ----------------------------------------------------------------------------
+// TR2012 head car (second class only)
+// ----------------------------------------------------------------------------
+item (FEAT_TRAINS, tr2012_head, 102) {
+    property {
+        name: string(STR_NAME_TR2012_HEAD);
+        sprite_id: SPRITE_ID_NEW_TRAIN;
+        misc_flags: bitmask(TRAIN_FLAG_MU);
+        engine_class: ENGINE_CLASS_MAGLEV;
+        climates_available: ALL_CLIMATES;
+        introduction_date: date(2012,1,1);
+        model_life: VEHICLE_NEVER_EXPIRES;
+        vehicle_life: 30;
+        track_type: MGLV;
+        refittable_cargo_classes: bitmask(CC_PASSENGERS);
+        non_refittable_cargo_classes: 0;
+        cargo_allow_refit: [PASS];
+        cargo_disallow_refit: [];
+        refit_cost: 0;
+        default_cargo_type: PASS;
+        ai_special_flag: AI_FLAG_PASSENGER;
+        cargo_capacity: 1;
+        loading_speed: ((60 * param_capacity) / 100) * (1 << param_loading_mode);
+        cargo_age_period: 200 * (1 << param_cargo_age_mode);
+        speed: 350 km/h;
+        power: 3000 kW;
+        weight: 50 ton;
+        tractive_effort_coefficient: 0.32;
+        cost_factor: (120 * param_purchase) / 100;
+        running_cost_base: RUNNING_COST_ELECTRIC;
+        running_cost_factor: (90 * param_running) / 100;
+        reliability_decay: 5;
+    }
+    graphics {
+        additional_text: string(STR_DESC_TR2012);
+        can_attach_wagon: sw_tr2012_can_attach;
+        start_stop: sw_std_head_start_stop;
+        cargo_subtype_text: sw_tr2012_head_subtype_text;
+        default: sw_tr2012_head_graphics;
+        purchase: sw_tr2012_head_purchase;
+        articulated_part: sw_tr2012_head_articulated;
+        length: sw_length_2_8_2;
+        cargo_capacity: sw_cap_tr2012_head;
+        cargo_age_period: sw_age_tr2012_head;
+        power: sw_power_head_tr2012;
+        tractive_effort_coefficient: sw_traction_head_tr2012;
+        purchase_cargo_capacity: (150 * param_capacity) / 300;
+    }
+    livery_override(mid_second) {
+        default: sw_ov_tr2012_mid_graphics;
+        length: sw_length_2_8_2;
+        articulated_part: sw_mid_second_articulated;
+        cargo_capacity: sw_cap_mid_second_tr2012;
+        cargo_age_period: sw_age_mid_second_tr2012;
+        loading_speed: ((80 * param_capacity) / 100) * (1 << param_loading_mode);
+        power: sw_power_mid_tr2012;
+        weight: 46;
+        tractive_effort_coefficient: sw_traction_mid_tr2012;
+        cost_factor: (80 * param_purchase) / 100;
+        running_cost_factor: (60 * param_running) / 100;
+    }
+    // TR2012 does not accept first class intermediate cars.
+    // (Blocked by sw_tr2012_can_attach; no override is defined on purpose.)
+}
+
+// ----------------------------------------------------------------------------
+// First class intermediate car (TR08 only)
+// ----------------------------------------------------------------------------
+item (FEAT_TRAINS, mid_first, 103) {
+    property {
+        name: string(STR_NAME_MID_FIRST);
+        sprite_id: SPRITE_ID_NEW_TRAIN;
+        misc_flags: bitmask(TRAIN_FLAG_MU);
+        engine_class: ENGINE_CLASS_MAGLEV;
+        climates_available: ALL_CLIMATES;
+        introduction_date: date(1999,6,1);
+        model_life: VEHICLE_NEVER_EXPIRES;
+        vehicle_life: 30;
+        track_type: MGLV;
+        refittable_cargo_classes: bitmask(CC_PASSENGERS);
+        non_refittable_cargo_classes: 0;
+        cargo_allow_refit: [PASS];
+        cargo_disallow_refit: [];
+        refit_cost: 0;
+        default_cargo_type: PASS;
+        ai_special_flag: AI_FLAG_PASSENGER;
+        // Non-zero sentinel, see the note on the head cars.  Without this
+        // OpenTTD never evaluates the capacity callback in the livery
+        // override and every intermediate car stays at 0 seats.
+        cargo_capacity: 1;
+        loading_speed: 16 * (1 << param_loading_mode);
+        cargo_age_period: 0;
+        speed: 0 km/h;
+        power: 0;
+        weight: 0 ton;
+        tractive_effort_coefficient: 0;
+        cost_factor: 0;
+        running_cost_base: RUNNING_COST_ELECTRIC;
+        running_cost_factor: 0;
+        reliability_decay: 5;
+    }
+    graphics {
+        additional_text: string(STR_DESC_MID);
+        default: sw_mid_standalone;
+        purchase: sp_purchase_mid;
+        cargo_capacity: 0;
+        articulated_part: sw_mid_first_articulated;
+        length: sw_length_2_8_2;
+        purchase_cargo_capacity: 0;
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Second class intermediate car (TR08 + TR2012)
+// ----------------------------------------------------------------------------
+item (FEAT_TRAINS, mid_second, 104) {
+    property {
+        name: string(STR_NAME_MID_SECOND);
+        sprite_id: SPRITE_ID_NEW_TRAIN;
+        misc_flags: bitmask(TRAIN_FLAG_MU);
+        engine_class: ENGINE_CLASS_MAGLEV;
+        climates_available: ALL_CLIMATES;
+        introduction_date: date(1999,6,1);
+        model_life: VEHICLE_NEVER_EXPIRES;
+        vehicle_life: 30;
+        track_type: MGLV;
+        refittable_cargo_classes: bitmask(CC_PASSENGERS);
+        non_refittable_cargo_classes: 0;
+        cargo_allow_refit: [PASS];
+        cargo_disallow_refit: [];
+        refit_cost: 0;
+        default_cargo_type: PASS;
+        ai_special_flag: AI_FLAG_PASSENGER;
+        cargo_capacity: 1;
+        loading_speed: 16 * (1 << param_loading_mode);
+        cargo_age_period: 0;
+        speed: 0 km/h;
+        power: 0;
+        weight: 0 ton;
+        tractive_effort_coefficient: 0;
+        cost_factor: 0;
+        running_cost_base: RUNNING_COST_ELECTRIC;
+        running_cost_factor: 0;
+        reliability_decay: 5;
+    }
+    graphics {
+        additional_text: string(STR_DESC_MID);
+        default: sw_mid_standalone;
+        purchase: sp_purchase_mid;
+        cargo_capacity: 0;
+        articulated_part: sw_mid_second_articulated;
+        length: sw_length_2_8_2;
+        purchase_cargo_capacity: 0;
+    }
+}
+
+// ----------------------------------------------------------------------------
+// MR2015 Maglevranger engineering car
+// ----------------------------------------------------------------------------
+// Item ID 105 is reserved for MR2015. TR2015 passenger uses ID 106, and the
+// other train items use 100..104 to keep the whole set in a compact range.
+item (FEAT_TRAINS, maglevranger_2015, 105) {
+    property {
+        name: string(STR_NAME_MR2015);
+        sprite_id: SPRITE_ID_NEW_TRAIN;
+        misc_flags: bitmask(TRAIN_FLAG_MU);
+        engine_class: ENGINE_CLASS_MAGLEV;
+        climates_available: ALL_CLIMATES;
+        introduction_date: date(2015,1,1);
+        model_life: VEHICLE_NEVER_EXPIRES;
+        vehicle_life: 50;
+        track_type: MGLV;
+
+        refittable_cargo_classes: bitmask(CC_PASSENGERS);
+        non_refittable_cargo_classes: 0;
+        cargo_allow_refit: [PASS];
+        cargo_disallow_refit: [];
+        refit_cost: 0;
+        default_cargo_type: PASS;
+        cargo_capacity: 1;
+        loading_speed: ((2 * param_capacity + 50) / 100) * (1 << param_loading_mode);
+        cargo_age_period: 200 * (1 << param_cargo_age_mode);
+
+        speed: 160 km/h;
+        power: 6400 kW;
+        weight: 128 ton;
+        tractive_effort_coefficient: 0.5;
+        cost_factor: (127 * param_purchase) / 100;
+        running_cost_base: RUNNING_COST_ELECTRIC;
+        running_cost_factor: (21 * param_running) / 100;
+        reliability_decay: 2;
+    }
+    graphics {
+        additional_text: string(STR_DESC_MR2015);
+        can_attach_wagon: sw_mr2015_can_attach;
+        start_stop: sw_mr2015_start_stop;
+        default: sw_eng_mr2015_graphics;
+        purchase: sp_purchase_eng_mr2015;
+        articulated_part: sw_mr2015_articulated;
+        length: sw_length_2_8_2;
+        speed: sw_speed_mr2015;
+        power: sw_power_mr2015;
+        cargo_capacity: sw_cap_mr2015;
+        cost_factor: (126 * param_purchase) / 100;
+        running_cost_factor: (21 * param_running) / 100;
+        purchase_speed: 160;
+        purchase_power: 8582;
+        purchase_weight: 128;
+        purchase_running_cost_factor: 82;
+        purchase_cargo_capacity: (8 * param_capacity + 100) / 300;
+    }
+}
+
+// ----------------------------------------------------------------------------
+// TR2015 passenger head car
+// ----------------------------------------------------------------------------
+item (FEAT_TRAINS, tr2015_head, 106) {
+    property {
+        name: string(STR_NAME_TR2015_HEAD);
+        // NML requires SPRITE_ID_NEW_TRAIN; the requested symbolic name is
+        // represented by this separate TR2015 train item.
+        sprite_id: SPRITE_ID_NEW_TRAIN;
+        misc_flags: bitmask(TRAIN_FLAG_MU);
+        engine_class: ENGINE_CLASS_MAGLEV;
+        climates_available: ALL_CLIMATES;
+        introduction_date: date(2015,1,1);
+        model_life: VEHICLE_NEVER_EXPIRES;
+        vehicle_life: 25;
+        track_type: MGLV;
+
+        refittable_cargo_classes: bitmask(CC_PASSENGERS);
+        non_refittable_cargo_classes: 0;
+        cargo_allow_refit: [PASS];
+        cargo_disallow_refit: [];
+        refit_cost: 0;
+        default_cargo_type: PASS;
+        ai_special_flag: AI_FLAG_PASSENGER;
+        cargo_capacity: 1;
+        loading_speed: ((4 * param_capacity) / 100) * (1 << param_loading_mode);
+        cargo_age_period: 1200 * (1 << param_cargo_age_mode);
+
+        speed: 450 km/h;
+        power: 3600 kW;
+        weight: 50 ton;
+        tractive_effort_coefficient: 0.35;
+        cost_factor: (61 * param_purchase) / 100;
+        running_cost_base: RUNNING_COST_ELECTRIC;
+        running_cost_factor: (5 * param_running) / 100;
+        reliability_decay: 4;
+    }
+    graphics {
+        additional_text: string(STR_DESC_TR2015_HEAD);
+        can_attach_wagon: sw_tr2015_can_attach;
+        start_stop: sw_std_head_start_stop;
+        cargo_subtype_text: sw_tr2015_head_subtype_text;
+        default: sw_tr2015_head_graphics;
+        purchase: sw_tr2015_head_purchase;
+        articulated_part: sw_tr2015_articulated;
+        length: sw_length_2_8_2;
+        power: sw_power_tr2015_head;
+        cargo_capacity: sw_cap_tr2015_head;
+        cargo_age_period: sw_age_tr2015_head;
+        tractive_effort_coefficient: sw_traction_tr2015_head;
+        cost_factor: (59 * param_purchase) / 100;
+        running_cost_factor: (5 * param_running) / 100;
+        purchase_speed: 450;
+        purchase_power: 4829;
+        purchase_weight: 50;
+        purchase_running_cost_factor: 44;
+        purchase_cargo_capacity: (12 * param_capacity) / 300;
+    }
+    livery_override(mid_first) {
+        default: sw_ov_tr2015_mid_graphics;
+        length: sw_length_2_8_2;
+        articulated_part: sw_mid_first_articulated;
+        cargo_capacity: sw_cap_tr2015_mid_first;
+        cargo_age_period: sw_age_tr2015_mid_first;
+        loading_speed: ((9 * param_capacity) / 100) * (1 << param_loading_mode);
+        power: sw_power_tr2015_mid;
+        weight: 48;
+        tractive_effort_coefficient: sw_traction_tr2015_mid;
+        cost_factor: (85 * param_purchase) / 100;
+        running_cost_factor: (13 * param_running) / 100;
+    }
+    livery_override(mid_second) {
+        default: sw_ov_tr2015_mid_graphics;
+        length: sw_length_2_8_2;
+        articulated_part: sw_mid_second_articulated;
+        cargo_capacity: sw_cap_tr2015_mid_second;
+        cargo_age_period: sw_age_tr2015_mid_second;
+        loading_speed: ((36 * param_capacity) / 100) * (1 << param_loading_mode);
+        power: sw_power_tr2015_mid;
+        weight: 48;
+        tractive_effort_coefficient: sw_traction_tr2015_mid;
+        cost_factor: (85 * param_purchase) / 100;
+        running_cost_factor: (13 * param_running) / 100;
+    }
+    livery_override(tr2015_zexl) {
+        default: empty_sprites;
+        articulated_part: sw_tr2015_zexl_articulated;
+        length: sw_length_2_8_2;
+        cargo_capacity: sw_cap_tr2015_zexl_mail;
+        loading_speed: sw_loading_tr2015_zexl_mail;
+        cargo_age_period: sw_age_tr2015_zexl_mail;
+        speed: 450;
+        power: sw_power_tr2015_mid;
+        weight: 50;
+        tractive_effort_coefficient: sw_traction_tr2015_mid;
+        cost_factor: (85 * param_purchase) / 100;
+        running_cost_factor: (13 * param_running) / 100;
+    }
+}
+
+// ----------------------------------------------------------------------------
+// TR2015 freight head (SSPE / red dragon livery)
+// ----------------------------------------------------------------------------
+item (FEAT_TRAINS, tr2015_freight_head, 107) {
+    property {
+        name: string(STR_NAME_TR2015_FREIGHT_HEAD);
+        sprite_id: SPRITE_ID_NEW_TRAIN;
+        misc_flags: bitmask(TRAIN_FLAG_AUTOREFIT, TRAIN_FLAG_MU);
+        engine_class: ENGINE_CLASS_MAGLEV;
+        climates_available: ALL_CLIMATES;
+        introduction_date: date(2015,1,1);
+        model_life: 30;
+        vehicle_life: 30;
+        track_type: MGLV;
+
+        refittable_cargo_classes:
+            bitmask(CC_MAIL, CC_ARMOURED, CC_EXPRESS, CC_PIECE_GOODS);
+        non_refittable_cargo_classes:
+            bitmask(CC_PASSENGERS, CC_LIQUID, CC_HAZARDOUS,
+                    CC_OVERSIZED, CC_COVERED);
+        cargo_allow_refit: [MAIL, GOOD, VALU, GOLD, DIAM];
+        cargo_disallow_refit: [];
+        refit_cost: 0;
+        default_cargo_type: GOOD;
+        ai_special_flag: AI_FLAG_CARGO;
+        cargo_capacity: 1;
+        loading_speed: 10 * (1 << param_loading_mode);
+        cargo_age_period: 250 * (1 << param_cargo_age_mode);
+
+        speed: 450 km/h;
+        power: 4800 kW;
+        weight: 50 ton;
+        tractive_effort_coefficient: 0.35;
+        cost_factor: (76 * param_purchase) / 100;
+        running_cost_base: RUNNING_COST_ELECTRIC;
+        running_cost_factor: (6 * param_running) / 100;
+        reliability_decay: 6;
+    }
+    graphics {
+        additional_text: string(STR_DESC_TR2015_FREIGHT_HEAD);
+        can_attach_wagon: sw_tr2015_freight_can_attach;
+        start_stop: sw_std_head_start_stop;
+        cargo_subtype_text: sw_tr2015_freight_subtype_text;
+        default: sw_tr2015_freight_head_graphics;
+        purchase: sw_tr2015_freight_head_purchase;
+        articulated_part: sw_tr2015_freight_head_articulated;
+        length: sw_length_2_8_2;
+        cargo_capacity: sw_cap_tr2015_freight_head;
+        loading_speed: sw_loading_tr2015_freight_head;
+        cargo_age_period: sw_age_tr2015_freight_head;
+        power: sw_power_tr2015_freight_head;
+        tractive_effort_coefficient: sw_traction_freight;
+        cost_factor: (74 * param_purchase) / 100;
+        running_cost_factor: (6 * param_running) / 100;
+        purchase_speed: 450;
+        purchase_power: 6437;
+        purchase_weight: 50;
+        purchase_running_cost_factor: 55;
+        purchase_cargo_capacity: 40 / 3;
+    }
+    livery_override(tr2015_freight_mid) {
+        default: sw_tr2015_freight_mid_graphics;
+        cargo_subtype_text: sw_tr2015_freight_subtype_text;
+        articulated_part: sw_tr2015_freight_mid_articulated;
+        length: sw_length_2_8_2;
+        cargo_capacity: sw_cap_tr2015_freight_mid;
+        loading_speed: sw_loading_tr2015_freight_mid;
+        cargo_age_period: sw_age_tr2015_freight_mid;
+        speed: 450;
+        power: sw_power_tr2015_freight_mid;
+        weight: 48;
+        tractive_effort_coefficient: sw_traction_freight;
+        cost_factor: (106 * param_purchase) / 100;
+        running_cost_factor: (16 * param_running) / 100;
+    }
+    livery_override(tr2015_refrigerated) {
+        default: sw_tr2015_refrigerated_graphics;
+        cargo_subtype_text: sw_tr2015_refrigerated_subtype_text;
+        articulated_part: sw_tr2015_refrigerated_articulated;
+        length: sw_length_2_8_2;
+        cargo_capacity: sw_cap_tr2015_refrigerated;
+        loading_speed: sw_loading_tr2015_refrigerated;
+        cargo_age_period: sw_age_tr2015_refrigerated;
+        speed: 450;
+        power: sw_power_tr2015_freight_mid;
+        weight: 50;
+        tractive_effort_coefficient: sw_traction_freight;
+        cost_factor: (128 * param_purchase) / 100;
+        running_cost_factor: (20 * param_running) / 100;
+    }
+}
+
+// ----------------------------------------------------------------------------
+// TR2015 general freight intermediate car
+// ----------------------------------------------------------------------------
+item (FEAT_TRAINS, tr2015_freight_mid, 108) {
+    property {
+        name: string(STR_NAME_TR2015_FREIGHT_MID);
+        sprite_id: SPRITE_ID_NEW_TRAIN;
+        misc_flags: bitmask(TRAIN_FLAG_AUTOREFIT, TRAIN_FLAG_MU);
+        engine_class: ENGINE_CLASS_MAGLEV;
+        climates_available: ALL_CLIMATES;
+        introduction_date: date(2015,1,1);
+        model_life: 30;
+        vehicle_life: 30;
+        track_type: MGLV;
+        refittable_cargo_classes:
+            bitmask(CC_MAIL, CC_ARMOURED, CC_EXPRESS, CC_PIECE_GOODS);
+        non_refittable_cargo_classes:
+            bitmask(CC_PASSENGERS, CC_LIQUID, CC_HAZARDOUS,
+                    CC_OVERSIZED, CC_COVERED);
+        cargo_allow_refit: [MAIL, GOOD, VALU, GOLD, DIAM];
+        cargo_disallow_refit: [];
+        refit_cost: 0;
+        default_cargo_type: GOOD;
+        cargo_capacity: 1;
+        loading_speed: 20 * (1 << param_loading_mode);
+        cargo_age_period: 250 * (1 << param_cargo_age_mode);
+        speed: 0 km/h;
+        power: 0;
+        weight: 48 ton;
+        tractive_effort_coefficient: 0;
+        cost_factor: (106 * param_purchase) / 100;
+        running_cost_base: RUNNING_COST_ELECTRIC;
+        running_cost_factor: (16 * param_running) / 100;
+        reliability_decay: 6;
+    }
+    graphics {
+        additional_text: string(STR_DESC_TR2015_FREIGHT_MID);
+        cargo_subtype_text: sw_tr2015_freight_subtype_text;
+        default: sw_tr2015_freight_mid_graphics;
+        purchase: sw_tr2015_freight_mid_purchase;
+        articulated_part: sw_tr2015_freight_mid_articulated;
+        length: sw_length_2_8_2;
+        cargo_capacity: sw_cap_tr2015_freight_mid;
+        loading_speed: sw_loading_tr2015_freight_mid;
+        cargo_age_period: sw_age_tr2015_freight_mid;
+        purchase_cargo_capacity: 80 / 3;
+    }
+}
+
+// ----------------------------------------------------------------------------
+// TR2015 refrigerated intermediate car
+// ----------------------------------------------------------------------------
+item (FEAT_TRAINS, tr2015_refrigerated, 109) {
+    property {
+        name: string(STR_NAME_TR2015_REFRIGERATED);
+        sprite_id: SPRITE_ID_NEW_TRAIN;
+        misc_flags: bitmask(TRAIN_FLAG_AUTOREFIT, TRAIN_FLAG_MU);
+        engine_class: ENGINE_CLASS_MAGLEV;
+        climates_available: ALL_CLIMATES;
+        introduction_date: date(2015,1,1);
+        model_life: 30;
+        vehicle_life: 30;
+        track_type: MGLV;
+        refittable_cargo_classes: bitmask(CC_REFRIGERATED, CC_POTABLE);
+        non_refittable_cargo_classes: 0;
+        cargo_allow_refit: [FISH, FOOD, FRUT, FRVG, MILK, SGBT];
+        cargo_disallow_refit: [];
+        refit_cost: 0;
+        default_cargo_type: FOOD;
+        cargo_capacity: 1;
+        loading_speed: 20 * (1 << param_loading_mode);
+        cargo_age_period: 1600 * (1 << param_cargo_age_mode);
+        speed: 0 km/h;
+        power: 0;
+        weight: 50 ton;
+        tractive_effort_coefficient: 0;
+        cost_factor: (128 * param_purchase) / 100;
+        running_cost_base: RUNNING_COST_ELECTRIC;
+        running_cost_factor: (20 * param_running) / 100;
+        reliability_decay: 6;
+    }
+    graphics {
+        additional_text: string(STR_DESC_TR2015_REFRIGERATED);
+        cargo_subtype_text: sw_tr2015_refrigerated_subtype_text;
+        default: sw_tr2015_refrigerated_graphics;
+        purchase: sp_purchase_t15_red_dragon_refrigerated;
+        articulated_part: sw_tr2015_refrigerated_articulated;
+        length: sw_length_2_8_2;
+        cargo_capacity: sw_cap_tr2015_refrigerated;
+        loading_speed: sw_loading_tr2015_refrigerated;
+        cargo_age_period: sw_age_tr2015_refrigerated;
+        purchase_cargo_capacity: 80 / 3;
+    }
+}
+
+// ----------------------------------------------------------------------------
+// TR2015 baggage/second-class composite car: mail item + hidden passenger item
+// ----------------------------------------------------------------------------
+item (FEAT_TRAINS, tr2015_zexl, 110) {
+    property {
+        name: string(STR_NAME_TR2015_ZEXL);
+        sprite_id: SPRITE_ID_NEW_TRAIN;
+        misc_flags: bitmask(TRAIN_FLAG_MU);
+        engine_class: ENGINE_CLASS_MAGLEV;
+        climates_available: ALL_CLIMATES;
+        introduction_date: date(2015,1,1);
+        model_life: 25;
+        vehicle_life: 30;
+        track_type: MGLV;
+        refittable_cargo_classes: bitmask(CC_MAIL);
+        non_refittable_cargo_classes: 0;
+        cargo_allow_refit: [MAIL];
+        cargo_disallow_refit: [];
+        refit_cost: 0;
+        default_cargo_type: MAIL;
+        cargo_capacity: 1;
+        loading_speed: 20 * (1 << param_loading_mode);
+        cargo_age_period: 400 * (1 << param_cargo_age_mode);
+        speed: 0 km/h;
+        power: 0;
+        weight: 50 ton;
+        tractive_effort_coefficient: 0;
+        cost_factor: (85 * param_purchase) / 100;
+        running_cost_base: RUNNING_COST_ELECTRIC;
+        running_cost_factor: (13 * param_running) / 100;
+        reliability_decay: 4;
+    }
+    graphics {
+        additional_text: string(STR_DESC_TR2015_ZEXL);
+        default: empty_sprites;
+        purchase: sp_purchase_t15_red_dragon_zexl;
+        articulated_part: sw_tr2015_zexl_articulated;
+        length: sw_length_2_8_2;
+        cargo_capacity: sw_cap_tr2015_zexl_mail;
+        loading_speed: sw_loading_tr2015_zexl_mail;
+        cargo_age_period: sw_age_tr2015_zexl_mail;
+        purchase_cargo_capacity: 80 / 3;
+    }
+}
+
+item (FEAT_TRAINS, tr2015_zexl_passenger, 111) {
+    property {
+        name: string(STR_NAME_TR2015_ZEXL_PASSENGER);
+        sprite_id: SPRITE_ID_NEW_TRAIN;
+        misc_flags: bitmask(TRAIN_FLAG_MU);
+        climates_available: NO_CLIMATE;
+        introduction_date: date(2015,1,1);
+        model_life: 25;
+        vehicle_life: 30;
+        track_type: MGLV;
+        refittable_cargo_classes: bitmask(CC_PASSENGERS);
+        non_refittable_cargo_classes: 0;
+        cargo_allow_refit: [PASS];
+        cargo_disallow_refit: [];
+        refit_cost: 0;
+        default_cargo_type: PASS;
+        cargo_capacity: 1;
+        loading_speed: 15 * (1 << param_loading_mode);
+        cargo_age_period: 250 * (1 << param_cargo_age_mode);
+        speed: 0 km/h;
+        power: 0;
+        weight: 0 ton;
+        tractive_effort_coefficient: 0;
+        cost_factor: 0;
+        running_cost_base: RUNNING_COST_ELECTRIC;
+        running_cost_factor: 0;
+        reliability_decay: 4;
+    }
+    graphics {
+        default: sw_tr2015_zexl_passenger_graphics;
+        purchase: sp_purchase_t15_red_dragon_zexl;
+        length: sw_length_2_8_2;
+        cargo_capacity: sw_cap_tr2015_zexl_passenger;
+        loading_speed: sw_loading_tr2015_zexl_passenger;
+        cargo_age_period: sw_age_tr2015_zexl_passenger;
+        purchase_cargo_capacity: 60 / 3;
+    }
+}
+

@@ -1,0 +1,17 @@
+# nmlc cache
+.nmlcache/
+
+# local backups and archives
+backup_*/
+*.zip
+*.rar
+
+# generated debugging files
+*.dep
+*.nfo
+
+# editor and operating-system files
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini

@@ -1,0 +1,250 @@
+China Maglev Fictional Set - NML 版本修改记录
+================================================
+
+说明
+----
+本文件记录主要 NML 版本的用途和相对上一版的行为变化。
+旧 NML、GRF 和图象文件均保留，除非条目中明确说明删除。
+
+
+2026-10-23
+----------
+文件:
+  china_maglev_20261023.nml
+  china_maglev_20261023.grf
+
+阶段:
+  早期可编译版本，建立 TR08、TR2012、TR2015、MR2015 等基础车辆和涂装。
+
+
+2026-10-30
+----------
+文件:
+  china_maglev_20261030.nml
+  china_maglev_20261030_v2.nml
+  china_maglev_20261030_v3.nml
+
+阶段:
+  加入 TR2015 客运/货运头车、一等座/二等座/行李二等合造/货运/冷藏中间车，
+  完善涂装改装、容量、装卸速率、邮件容量参数和工程车动力隔离。
+
+v3 实测发现:
+  1. 双头编组中后部常规头车始终正向。
+  2. 与常规车混编时 MR2015 的挂接数量限制不可靠。
+  3. MR2015 位于普通车前方时，普通车功率没有可靠切断。
+  4. MR2015 只在全列尾部时，动态限速可能不能可靠生效。
+
+原因:
+  SELF 作用域的 count_veh_id() 从当前物理车辆段向列车尾部统计，
+  看不到当前车辆前方的车辆。图形回调又在三节棍中间段运行，
+  因此旧的双头统计得到 2/5 等值，而不是完整的 3/6。
+
+
+2026-10-31
+----------
+无 NML 文件修改。
+
+完成:
+  参照 xUSSR ER2，分析以 PARENT 整列头部为基准的 MU 判断方法，
+  确认动态 power 和 tractive_effort_coefficient 回调可以切断实际动力。
+
+
+2026-11-01
+----------
+文件:
+  china_maglev_20261101.nml
+  china_maglev_20261101.grf
+
+基线:
+  china_maglev_20261030_v3.nml
+
+修改:
+  1. 新增 PARENT 作用域的全列统计:
+     - sw_parent_regular_head_parts
+     - sw_parent_mr2015_parts
+     - sw_parent_has_regular_vehicle
+  2. 常规头车方向、双头统计、启动前编组检查改用 PARENT 全列统计。
+     双头编组继续使用 position_in_consist 与
+     position_in_consist_from_end 判断前后，后部头车现在应使用反向图。
+  3. MR2015 存在判断改为从整列第一节统计。
+     所有普通车的 power 和 tractive_effort_coefficient 回调在任意位置
+     检测到 MR2015 后都返回 0，不再受工程车位于前方或后方影响。
+  4. MR2015 混合编组速度判断改为整列统计:
+     纯 MR2015 编组 160 km/h，存在普通车时 100 km/h。
+  5. 重写 can_attach_wagon 的 MR2015 数量规则:
+     - 纯工程车编组不限数量。
+     - 与普通车混编时最多 2 辆，即最多 6 个物理段。
+     - 第一辆只能在编组端部。
+     - 第二辆必须位于第一辆相反的一端。
+     - 纯工程车编组已有超过 2 辆 MR2015 时，不再允许加入第一辆普通车。
+  6. 常规头车挂接时同时限制最多 2 辆。
+  7. 本版不使用 bitmask 车辆标志，仍以本 GRF 的 MR2015 本地 ID 105 为目标。
+
+编译:
+  nmlc 0.8.1
+  nmlc -c -l lang --default-lang=english.lng
+    -o china_maglev_20261101.grf china_maglev_20261101.nml
+
+结果:
+  编译成功。只有原有 32bpp mask 图象中少量动画像素的警告，没有 NML 错误。
+  NML SHA-256:
+    FEC9F95ED1ED6259C39C3E59E3CF914345C4AC9578912345F0B0930175F56AFA
+  GRF SHA-256:
+    25983F61ED994EE5B3A78B227D155E27A957506167C24D2046105764199D955D
+
+建议测试:
+  1. 双头常规编组，不挂 MR2015，确认后部头车反向。
+  2. MR2015 分别位于常规编组前端、后端和两端，确认后部头车方向、
+     100 km/h 限速及普通车动力切断。
+  3. MR2015 单独和纯工程车重联，确认 160 km/h 且工程车动力保留。
+  4. 尝试向混合编组挂第三辆 MR2015，确认被拒绝。
+  5. 尝试把两辆工程车挂在同一端，确认第二辆被拒绝。
+
+
+2026-11-01 v2
+-------------
+文件:
+  china_maglev_20261101_v2.nml
+  china_maglev_20261101_v2.grf
+
+基线:
+  china_maglev_20261101.nml
+
+新增涂装:
+  TR2015 客运型 - 上海地铁联动
+  cargo_subtype = 2
+
+新增图象:
+  gfx/vehicles_4x 和 gfx/game_4x:
+    TR2015_head_shanghai_metro_32bpp/8bpp/mask.png
+    TR2015_mid_shanghai_metro_32bpp/8bpp/mask.png
+    TR2015_mid_shanghai_metro_zexl_32bpp/8bpp/mask.png
+
+体素源:
+  E:/project_game/grfs/体素/test1/TR2015V1.6_head_上海地铁联动.vox
+  E:/project_game/grfs/体素/test1/TR2015V1.6_mid_上海地铁联动.vox
+  E:/project_game/grfs/体素/test1/TR2015V1.6_mid_上海地铁联动_ZEXL.vox
+
+NML 修改:
+  1. 增加上海地铁联动头车、尾向、购买菜单和普通中间车 spriteset。
+  2. 增加行李/二等座合造车专用 spriteset。
+  3. TR2015 客运头车的 cargo_subtype 2 映射到上海地铁联动。
+  4. 普通中间车和行李/二等座合造车从 PARENT 头车读取涂装 subtype，
+     因此可随头车统一改装到上海地铁联动。
+  5. 新涂装的 mask 只有 GoRender 默认占位色，没有公司色区域，
+     所以 spriteset 只传入 32bpp 图像。
+
+语言文件:
+  lang/english.lng:
+    STR_SUB_T15_SHANGHAI_METRO_S :Shanghai Metro Link
+  lang/simplified_chinese.lng:
+    STR_SUB_T15_SHANGHAI_METRO_S :上海地铁联动
+
+图象处理:
+  GoRender -s 4 输出 4000x640 母图。
+  32bpp 使用 Lanczos 降采样，8bpp 和 mask 使用 Nearest 降采样，
+  游戏图尺寸为 1000x160。
+
+编译:
+  nmlc 0.8.1
+  nmlc -c -l lang --default-lang=english.lng
+    -o china_maglev_20261101_v2.grf china_maglev_20261101_v2.nml
+
+结果:
+  编译成功，共 472 sprites，12 个车辆 item。
+  只有原有 32bpp mask 图片中少量动画像素的警告，没有 NML 错误。
+  NML SHA-256:
+    AAEA720BD3904BCFC50461A826ABFAA73B9DFA4658AB60F04CF37A1E517804F6
+  GRF SHA-256:
+    1A11685FEC3314D46EB69D63E39981BAE4D9F796EDF52EC62A1299E55F177644
+
+建议测试:
+  1. TR2015 客运头车改装菜单应出现第三种涂装“上海地铁联动”。
+  2. 改装后头车、普通一等座/二等座中间车和行李/二等座合造车
+     应同步显示对应上海地铁联动图像。
+  3. 行李/二等座合造车应使用专用的 ZEXL 图像，而不是普通中间车图像。
+  4. 双头编组中后部头车应显示上海地铁联动的反向图。
+
+
+2026-11-01 v2.1
+---------------
+文件:
+  china_fictional_maglev.nml
+  china_fictional_maglev.grf
+
+基线:
+  china_fictional_maglev.nml（由原 china_maglev_20261101_v2.nml 更名）
+
+修改:
+  1. 重新读取并渲染用户更新后的以下体素模型:
+     E:/project_game/grfs/体素/test1/TR2015V1.6_mid_上海地铁联动.vox
+     E:/project_game/grfs/体素/test1/TR2015V1.6_mid_上海地铁联动_ZEXL.vox
+  2. 覆盖以下 4x 母图和游戏图:
+     TR2015_mid_shanghai_metro_32bpp/8bpp/mask.png
+     TR2015_mid_shanghai_metro_zexl_32bpp/8bpp/mask.png
+  3. NML 中已有上海地铁联动 cargo_subtype 2 及普通/ZEXL 中间车
+     映射保持不变；只刷新图象资源并更新版本注释。
+  4. 旧版 china_maglev_20261101_v2.nml 和同名 GRF 保留，不覆盖。
+
+图象处理:
+  GoRender -s 4 输出 4000x640。
+  32bpp 使用 Lanczos 降采样，8bpp 和 mask 使用 Nearest 降采样，
+  游戏图为 1000x160。
+
+编译:
+  nmlc 0.8.1
+  nmlc -c -l lang --default-lang=english.lng
+    -o china_fictional_maglev.grf china_fictional_maglev.nml
+
+结果:
+  编译成功，共 472 sprites，12 个车辆 item。
+  只有原有 32bpp mask 图片中少量动画像素的警告，没有 NML 错误。
+  NML SHA-256:
+    F6EB9170CBA9ADC15B36D3902125508A64909B39A6B448E2525B6A19DA4BAE52
+  GRF SHA-256:
+    101B2328EB992D6F5D71FE076F89B48D781BE1B7366D2B8775B9312512FE1AE6
+
+
+2026-11-01 Release preparation
+-------------------------------
+未改变车辆行为。
+
+修改:
+  1. README 增加 GPL-2.0-only 项目声明、非官方声明和 DEMO 状态说明。
+  2. china_fictional_maglev.nml 顶部增加 SPDX 标识和版权人列表。
+  3. 新增 BUILDING.md，记录依赖、重新渲染、降采样和编译命令。
+  4. 将实际使用的 GoRender manifest.json 和 ttd_palette.json
+     复制到 tools/gorender/，用于复现当前图片输出。
+  5. 本轮未上传 GitHub 或 BaNaNaS，未删除或重命名旧文件。
+
+
+2026-11-01 Demo publication preparation
+----------------------------------------
+车辆行为未改变。
+
+修改:
+  1. GRFID 从 "CMGV" 改为 "\4F\3F\01\00"。
+     BaNaNaS 内容 ID 为 newgrf/4f3f0100。
+     发布候选 3f4f0100 也检查过，同样尚未占用。
+  2. 英文 GRF 名称改为 China Fictional Maglev Set。
+  3. 中文 GRF 名称改为 中国架空磁浮车辆包。
+  4. README.md 改为英文完整说明，新增 README_zh.md 中文说明。
+  5. 添加项目分工、AI 辅助说明、设计参考和非官方声明。
+  6. build.ps1 更新为当前 NML 和 GRF，支持 -SkipSprites。
+  7. 添加 BUILDING.md 和 tools/gorender/ 下实际使用的渲染配置。
+  8. 将旧缓存、备份、旧生成脚本、旧 NFO/DEP、旧局部渲染脚本、
+     不完整 ZIP 和过期预览移动到 Windows 回收站。
+
+发布前仍待完成:
+  1. 将 lang/english.lng 和 lang/simplified_chinese.lng 中的
+     STR_GRF_URL 替换为最终 GitHub 地址。
+  2. 创建正式 CHANGELOG.md 和 BaNaNaS 使用的 changelog.txt。
+  3. 准备 readme.txt 和 license.txt 的 BaNaNaS 打包副本。
+  4. 初始化 Git 仓库并提交、推送。
+
+本轮编译:
+  nmlc 成功，472 sprites，12 个车辆 item。
+  NML SHA-256:
+    AE2114E55AAA239B751D45247AEC5FD484391D69B9FE330183785C27FF3DA0F0
+  GRF SHA-256:
+    61F0F530860BE5C4EFE1F5136F34485F678E8D0DA72441228DC30751FE02BF01

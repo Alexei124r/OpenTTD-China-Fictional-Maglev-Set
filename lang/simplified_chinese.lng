@@ -1,0 +1,99 @@
+##grflangid 0x56
+
+STR_GRF_NAME :中国架空磁浮车辆包
+STR_GRF_DESC :架空中国磁浮车辆：TR08、TR2012、TR2015 与 MR2015，多种涂装，适配磁浮轨道。
+STR_GRF_URL :https://github.com/OpenTTD-China-Set/China-Set-Trains
+STR_PARAM_CAPACITY :载客量
+STR_PARAM_CAPACITY_DESC :所有车辆的载客量倍率，默认 100%。
+STR_PARAM_PURCHASE :购置费用
+STR_PARAM_PURCHASE_DESC :所有车辆的购置费用倍率，默认 100%。
+STR_PARAM_RUNNING :运行费用
+STR_PARAM_RUNNING_DESC :所有车辆的运行费用倍率，默认 100%。
+STR_PARAM_MAIL_CAPACITY :邮件容量
+STR_PARAM_MAIL_CAPACITY_DESC :所有可运载邮件的车厢的邮件容量倍率。
+STR_PARAM_LOADING_RATE :装卸速率
+STR_PARAM_LOADING_RATE_DESC :所有车辆的装卸速度倍率。
+STR_PARAM_CARGO_AGE :货物老化周期
+STR_PARAM_CARGO_AGE_DESC :所有车辆的货物老化周期倍率。
+STR_PARAM_MAIL_X05 :×0.5
+STR_PARAM_MAIL_X1 :×1
+STR_PARAM_MAIL_X2 :×2
+STR_PARAM_MAIL_X4 :×4
+STR_PARAM_X1 :×1
+STR_PARAM_X2 :×2
+STR_PARAM_X4 :×4
+STR_ERROR_CONSIST :磁浮编组无效：最多 2 辆常规头车；混编时最多 2 辆 MR2015；双头编组之间至少需要 1 辆中间车。
+STR_NAME_TR08_HEAD :Transrapid 08 头车
+STR_NAME_TR08_HEAD_FIRST :Transrapid 08 头车（一等座）
+STR_NAME_TR08_HEAD_SECOND :Transrapid 08 头车（二等座）
+STR_NAME_TR2012_HEAD :Transrapid 2012 头车
+STR_NAME_MID :磁浮中间车
+STR_NAME_MID_FIRST :一等座中间车
+STR_NAME_MID_SECOND :二等座中间车
+STR_DESC_TR08 :磁浮，430 km/h。可挂一等座车、二等座车；可改装选择涂装。
+STR_DESC_TR2012 :磁浮，350 km/h。可挂二等座车；可改装选择涂装。
+STR_DESC_MID :改装选择车型、席别与涂装；动力与容量由所在列车的头车决定。
+STR_NAME_MAGLEV_TRANSRANGER_2015 :TR2015 TransRanger 工程车
+STR_DESC_MAGLEV_TRANSRANGER_2015 :磁浮工程与牵引车，单独运行 160 km/h；连挂客运列车时整列限速 100 km/h。
+STR_DESC_MAGLEV_TRANSRANGER_2015_SIMPLE :磁浮工程与牵引车，最高速度 160 km/h。无编组动态限速的兼容版本。
+STR_NAME_MR2015 :Maglevranger 2015（MR2015）工程车
+STR_DESC_MR2015 :磁浮工程与牵引车，单独运行 160 km/h；连挂客运列车时整列限速 100 km/h。
+STR_NAME_TR2015_HEAD :Transrapid 2015 客运头车
+STR_DESC_TR2015_HEAD :磁浮客运头车，最高速度 450 km/h。可挂一等座车、二等座车、行李/二等座合造车；餐车预留。改装可选择涂装。
+STR_NAME_TR2015_FREIGHT_HEAD :Transrapid 2015 货运头车
+STR_DESC_TR2015_FREIGHT_HEAD :磁浮货运头车，最高速度 450 km/h。可挂载货运车、冷藏车。
+STR_NAME_TR2015_FREIGHT_MID :TR2015 磁浮货运车
+STR_DESC_TR2015_FREIGHT_MID :磁浮货运中间车，需要 TR2015 货运头车提供动力。
+STR_NAME_TR2015_REFRIGERATED :TR2015 磁浮冷藏车
+STR_DESC_TR2015_REFRIGERATED :磁浮冷藏货运中间车，需要 TR2015 货运头车提供动力。
+STR_NAME_TR2015_ZEXL :TR2015 行李/二等座合造车
+STR_DESC_TR2015_ZEXL :邮件与旅客合造车厢，目前只能挂在 TR2015 客运头车之后。
+STR_NAME_TR2015_ZEXL_PASSENGER :TR2015 合造车旅客部分
+STR_SUB_TR08_A_F :白红
+STR_SUB_TR08_A_S :白红
+STR_SUB_TR08_B_F :朱红金
+STR_SUB_TR08_B_S :朱红金
+STR_SUB_TR08_C_F :上海磁浮（橙红/青）
+STR_SUB_TR08_C_S :上海磁浮（橙红/青）
+STR_SUB_TR08_G_F :RZD（红白灰）
+STR_SUB_TR08_G_S :RZD（红白灰）
+STR_SUB_TR08_H_F :白底绿斜带（正向）
+STR_SUB_TR08_H_S :白底绿斜带（正向）
+STR_SUB_TR08_Hf_F :白底绿斜带（反向）
+STR_SUB_TR08_Hf_S :白底绿斜带（反向）
+STR_SUB_T12_A_S :白红
+STR_SUB_T12_B_S :上海磁浮（橙红/青）
+STR_SUB_T12_C_S :橙黄
+STR_SUB_T12_D_S :白底绿斜带（正向）
+STR_SUB_T12_Df_S :白底绿斜带（反向）
+STR_SUB_T12_E_S :米黄底+朱红
+STR_SUB_T12_F_S :白底+靛蓝
+STR_SUB_T12_G_S :白底+公司色
+STR_SUB_T12_H_S :上海公交联动
+STR_SUB_T15_RED_DRAGON_S :红神龙
+STR_SUB_T15_SILVER_SWORD_S :银长剑
+STR_SUB_T15_SHANGHAI_METRO_S :上海地铁联动
+STR_SUB_T15_ENGINEERING_S :工程车（黄色）
+STR_SUB_T15_SSPE_FREIGHT :SSPE 货运
+STR_SUB_T15_RED_DRAGON_FREIGHT :红龙货运
+STR_SUB_T15_RED_DRAGON_FIRST :红神龙 · 一等座
+STR_SUB_T15_RED_DRAGON_SECOND :红神龙 · 二等座
+STR_SUB_T15_SILVER_SWORD_FIRST :银长剑 · 一等座
+STR_SUB_T15_SILVER_SWORD_SECOND :银长剑 · 二等座
+STR_SUB_MID_TR08_A_F :TR08 · 白红
+STR_SUB_MID_TR08_A_S :TR08 · 白红
+STR_SUB_MID_TR08_B_F :TR08 · 朱红金
+STR_SUB_MID_TR08_B_S :TR08 · 朱红金
+STR_SUB_MID_TR08_C_F :TR08 · 上海磁浮（橙红/青）
+STR_SUB_MID_TR08_C_S :TR08 · 上海磁浮（橙红/青）
+STR_SUB_MID_TR08_G_F :TR08 · RZD（红白灰）
+STR_SUB_MID_TR08_G_S :TR08 · RZD（红白灰）
+STR_SUB_MID_TR08_H_F :TR08 · 白底绿斜带（正向）
+STR_SUB_MID_TR08_H_S :TR08 · 白底绿斜带（正向）
+STR_SUB_MID_TR08_Hr_F :TR08 · 白底绿斜带（反向）
+STR_SUB_MID_TR08_Hr_S :TR08 · 白底绿斜带（反向）
+STR_SUB_MID_T12_A_S :TR2012 · 白红
+STR_SUB_MID_T12_B_S :TR2012 · 上海磁浮（橙红/青）
+STR_SUB_MID_T12_C_S :TR2012 · 橙黄
+STR_SUB_MID_T12_D_S :TR2012 · 白底绿斜带（正向）
+STR_SUB_MID_T12_Dr_S :TR2012 · 白底绿斜带（反向）
