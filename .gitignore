@@ -10,6 +10,10 @@ backup_*/
 *.dep
 *.nfo
 
+# root-level copies of GoRender config; keep tools/gorender versions
+/manifest.json
+/ttd_palette.json
+
 # editor and operating-system files
 .vscode/
 .idea/
