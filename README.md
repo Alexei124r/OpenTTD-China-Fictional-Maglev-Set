@@ -4,6 +4,8 @@
 
 **DEMO release**
 
+Source: <https://github.com/Alexei124r/OpenTTD-China-Fictional-Maglev-Set>
+
 China Fictional Maglev Set is an unofficial, fictional maglev vehicle set for
 OpenTTD. It currently includes Transrapid 08, Transrapid 2012, Transrapid 2015
 passenger and freight stock, and the MR2015 maglev engineering vehicle.

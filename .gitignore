@@ -5,6 +5,7 @@
 backup_*/
 *.zip
 *.rar
+/dist/
 
 # generated debugging files
 *.dep

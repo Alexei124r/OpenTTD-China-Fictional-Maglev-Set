@@ -4,6 +4,8 @@
 
 **DEMO 版本**
 
+源码地址：<https://github.com/Alexei124r/OpenTTD-China-Fictional-Maglev-Set>
+
 China Fictional Maglev Set 是一个面向 OpenTTD 的非官方架空磁浮车辆包。
 目前包含 Transrapid 08、Transrapid 2012、Transrapid 2015 客运与货运车辆，
 以及 MR2015 磁浮轨道工程车。

@@ -2,7 +2,7 @@
 
 STR_GRF_NAME :中国架空磁浮车辆包
 STR_GRF_DESC :架空中国磁浮车辆：TR08、TR2012、TR2015 与 MR2015，多种涂装，适配磁浮轨道。
-STR_GRF_URL :https://github.com/OpenTTD-China-Set/China-Set-Trains
+STR_GRF_URL :https://github.com/Alexei124r/OpenTTD-China-Fictional-Maglev-Set
 STR_PARAM_CAPACITY :载客量
 STR_PARAM_CAPACITY_DESC :所有车辆的载客量倍率，默认 100%。
 STR_PARAM_PURCHASE :购置费用

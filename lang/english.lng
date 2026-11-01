@@ -2,7 +2,7 @@
 
 STR_GRF_NAME :China Fictional Maglev Set
 STR_GRF_DESC :Fictional Chinese maglev vehicles: TR08, TR2012, TR2015 and MR2015 with multiple livery schemes. Runs on maglev track.
-STR_GRF_URL :https://github.com/OpenTTD-China-Set/China-Set-Trains
+STR_GRF_URL :https://github.com/Alexei124r/OpenTTD-China-Fictional-Maglev-Set
 STR_PARAM_CAPACITY :Passenger capacity
 STR_PARAM_CAPACITY_DESC :Multiplier for passenger capacity. Default 100%.
 STR_PARAM_PURCHASE :Purchase cost
