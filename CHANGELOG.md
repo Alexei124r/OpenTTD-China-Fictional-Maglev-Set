@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1-alpha - 2026-11-03
+
+- Renamed the passenger family to TR2015 and the freight family to TR2015F.
+- Rebalanced TR08, TR2012, TR2015 and TR2015F power and weight values.
+- Split the refrigerated-car power callback from the general freight car.
+
 ## 0.1.0-demo - 2026-11-01
 
 Initial public demo.

@@ -2,13 +2,13 @@
 
 [中文说明](README_zh.md)
 
-**DEMO release**
+**0.1.1-alpha**
 
 Source: <https://github.com/Alexei124r/OpenTTD-China-Fictional-Maglev-Set>
 
 China Fictional Maglev Set is an unofficial, fictional maglev vehicle set for
-OpenTTD. It currently includes Transrapid 08, Transrapid 2012, Transrapid 2015
-passenger and freight stock, and the MR2015 maglev engineering vehicle.
+OpenTTD. It currently includes TR08, TR2012, TR2015 passenger stock, TR2015F
+freight stock, and the MR2015 maglev engineering vehicle.
 
 ![China Fictional Maglev Set preview](preview/Train_Show1.jpg)
 
@@ -19,7 +19,7 @@ passenger and freight stock, and the MR2015 maglev engineering vehicle.
 - TR2015 passenger head car with Red Dragon, Silver Sword and Shanghai Metro
   Link liveries.
 - TR2015 first-class, second-class and baggage/second-class intermediate cars.
-- TR2015 freight head, general freight, refrigerated and baggage/second-class
+- TR2015F freight head, general freight, refrigerated and baggage/second-class
   stock.
 - MR2015 engineering/towing vehicle with consist-dependent speed and power
   isolation.

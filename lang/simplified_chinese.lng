@@ -1,7 +1,7 @@
 ##grflangid 0x56
 
 STR_GRF_NAME :中国架空磁浮车辆包
-STR_GRF_DESC :架空中国磁浮车辆：TR08、TR2012、TR2015 与 MR2015，多种涂装，适配磁浮轨道。
+STR_GRF_DESC :架空中国磁浮车辆：TR08、TR2012、TR2015、TR2015F 与 MR2015，多种涂装，适配磁浮轨道。
 STR_GRF_URL :https://github.com/Alexei124r/OpenTTD-China-Fictional-Maglev-Set
 STR_PARAM_CAPACITY :载客量
 STR_PARAM_CAPACITY_DESC :所有车辆的载客量倍率，默认 100%。
@@ -38,14 +38,14 @@ STR_DESC_MAGLEV_TRANSRANGER_2015 :磁浮工程与牵引车，单独运行 160 km
 STR_DESC_MAGLEV_TRANSRANGER_2015_SIMPLE :磁浮工程与牵引车，最高速度 160 km/h。无编组动态限速的兼容版本。
 STR_NAME_MR2015 :Maglevranger 2015（MR2015）工程车
 STR_DESC_MR2015 :磁浮工程与牵引车，单独运行 160 km/h；连挂客运列车时整列限速 100 km/h。
-STR_NAME_TR2015_HEAD :Transrapid 2015 客运头车
+STR_NAME_TR2015_HEAD :TR2015 客运头车
 STR_DESC_TR2015_HEAD :磁浮客运头车，最高速度 450 km/h。可挂一等座车、二等座车、行李/二等座合造车；餐车预留。改装可选择涂装。
-STR_NAME_TR2015_FREIGHT_HEAD :Transrapid 2015 货运头车
+STR_NAME_TR2015_FREIGHT_HEAD :TR2015F 货运头车
 STR_DESC_TR2015_FREIGHT_HEAD :磁浮货运头车，最高速度 450 km/h。可挂载货运车、冷藏车。
-STR_NAME_TR2015_FREIGHT_MID :TR2015 磁浮货运车
-STR_DESC_TR2015_FREIGHT_MID :磁浮货运中间车，需要 TR2015 货运头车提供动力。
-STR_NAME_TR2015_REFRIGERATED :TR2015 磁浮冷藏车
-STR_DESC_TR2015_REFRIGERATED :磁浮冷藏货运中间车，需要 TR2015 货运头车提供动力。
+STR_NAME_TR2015_FREIGHT_MID :TR2015F 磁浮货运车
+STR_DESC_TR2015_FREIGHT_MID :磁浮货运中间车，需要 TR2015F 货运头车提供动力。
+STR_NAME_TR2015_REFRIGERATED :TR2015F 磁浮冷藏车
+STR_DESC_TR2015_REFRIGERATED :磁浮冷藏货运中间车，需要 TR2015F 货运头车提供动力。
 STR_NAME_TR2015_ZEXL :TR2015 行李/二等座合造车
 STR_DESC_TR2015_ZEXL :邮件与旅客合造车厢，目前只能挂在 TR2015 客运头车之后。
 STR_NAME_TR2015_ZEXL_PASSENGER :TR2015 合造车旅客部分

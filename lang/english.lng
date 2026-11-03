@@ -1,7 +1,7 @@
 ##grflangid 0x01
 
 STR_GRF_NAME :China Fictional Maglev Set
-STR_GRF_DESC :Fictional Chinese maglev vehicles: TR08, TR2012, TR2015 and MR2015 with multiple livery schemes. Runs on maglev track.
+STR_GRF_DESC :Fictional Chinese maglev vehicles: TR08, TR2012, TR2015, TR2015F and MR2015 with multiple livery schemes. Runs on maglev track.
 STR_GRF_URL :https://github.com/Alexei124r/OpenTTD-China-Fictional-Maglev-Set
 STR_PARAM_CAPACITY :Passenger capacity
 STR_PARAM_CAPACITY_DESC :Multiplier for passenger capacity. Default 100%.
@@ -38,14 +38,14 @@ STR_DESC_MAGLEV_TRANSRANGER_2015 :Maglev engineering and towing car. 160 km/h al
 STR_DESC_MAGLEV_TRANSRANGER_2015_SIMPLE :Maglev engineering and towing car, 160 km/h. Static compatibility version without consist-dependent limits.
 STR_NAME_MR2015 :Maglevranger 2015 (MR2015) Engineering Car
 STR_DESC_MR2015 :Maglev engineering and towing car. 160 km/h alone; mixed passenger consists are limited to 100 km/h.
-STR_NAME_TR2015_HEAD :Transrapid 2015 Passenger Head Car
+STR_NAME_TR2015_HEAD :TR2015 Passenger Head Car
 STR_DESC_TR2015_HEAD :Maglev passenger head car, 450 km/h. Can attach first-class, second-class and baggage/second-class composite cars; a dining car is reserved. Refit selects livery.
-STR_NAME_TR2015_FREIGHT_HEAD :Transrapid 2015 Freight Head Car
+STR_NAME_TR2015_FREIGHT_HEAD :TR2015F Freight Head Car
 STR_DESC_TR2015_FREIGHT_HEAD :Maglev freight head car, 450 km/h. Can attach freight and refrigerated cars.
-STR_NAME_TR2015_FREIGHT_MID :TR2015 Freight Car
-STR_DESC_TR2015_FREIGHT_MID :Maglev freight car. Requires a TR2015 freight head car for traction.
-STR_NAME_TR2015_REFRIGERATED :TR2015 Refrigerated Car
-STR_DESC_TR2015_REFRIGERATED :Maglev refrigerated freight car. Requires a TR2015 freight head car for traction.
+STR_NAME_TR2015_FREIGHT_MID :TR2015F Freight Car
+STR_DESC_TR2015_FREIGHT_MID :Maglev freight car. Requires a TR2015F freight head car for traction.
+STR_NAME_TR2015_REFRIGERATED :TR2015F Refrigerated Car
+STR_DESC_TR2015_REFRIGERATED :Maglev refrigerated freight car. Requires a TR2015F freight head car for traction.
 STR_NAME_TR2015_ZEXL :TR2015 Baggage/Second-Class Composite Car
 STR_DESC_TR2015_ZEXL :Combined mail and passenger car. Currently may only be attached behind the TR2015 passenger head car.
 STR_NAME_TR2015_ZEXL_PASSENGER :TR2015 Composite Passenger Section

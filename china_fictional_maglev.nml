@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Andy, Bob, Carl, Dennis, Eric, Frank
 // ============================================================================
 // China Fictional Maglev Set
-// NML source, 2026-11-01 v2.1
+// NML source, 2026-11-03 v2.2 (release 0.1.1-alpha)
 //
 // Liveries:
 //   TR08   : A white/red, C Shanghai Maglev, G RZD red/white/grey
@@ -433,7 +433,7 @@ spriteset (sp_t15_mid_shanghai_metro_zexl, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP) {
     tpl_vehicle("gfx/game_4x/TR2015_mid_shanghai_metro_zexl_32bpp.png")
 }
 
-// TR2015 freight and baggage/coach composites.
+// TR2015F freight and TR2015 baggage/coach composites.
 spriteset (sp_t15_head_sspe_freight, ZOOM_LEVEL_IN_4X, BIT_DEPTH_32BPP,
     "gfx/game_4x/TR2015_head_SSPE_freight_32bpp.png",
     "gfx/game_4x/TR2015_head_SSPE_freight_mask.png") {
@@ -599,39 +599,46 @@ switch (FEAT_TRAINS, SELF, sw_cargo_age_scale, param_cargo_age_mode) {
 // Power callbacks are given in HP (the unit of the power callback).
 // Only articulated part 0 is powered, the other two parts report 0 so the
 // power of an item is not counted three times.
-//   3600 kW = 4829 hp
-//   3000 kW = 4023 hp
-//   2400 kW = 3218 hp
+//   1920 kW = 2575 hp
+//   2080 kW = 2789 hp
+//   1600 kW = 2146 hp
+//   1472 kW = 1974 hp
 //   2000 kW = 2682 hp
+//   3120 kW = 4184 hp
+//   2880 kW = 3862 hp
 //   6400 kW = 8582 hp
-//   4800 kW = 6437 hp
 switch (FEAT_TRAINS, SELF, sw_power_head_tr08_base, position_in_articulated_veh % 3) {
-    0: return 4829;
+    0: return 2575;
     return 0;
 }
 
 switch (FEAT_TRAINS, SELF, sw_power_head_tr2012_base, position_in_articulated_veh % 3) {
-    0: return 4023;
+    0: return 2146;
     return 0;
 }
 
 switch (FEAT_TRAINS, SELF, sw_power_mid_tr08_base, position_in_articulated_veh % 3) {
-    0: return 3218;
+    0: return 2789;
     return 0;
 }
 
 switch (FEAT_TRAINS, SELF, sw_power_mid_tr2012_base, position_in_articulated_veh % 3) {
-    0: return 2682;
+    0: return 1974;
     return 0;
 }
 
 switch (FEAT_TRAINS, SELF, sw_power_freight_head_base, position_in_articulated_veh % 3) {
-    0: return 6437;
+    0: return 4184;
     return 0;
 }
 
 switch (FEAT_TRAINS, SELF, sw_power_freight_mid_base, position_in_articulated_veh % 3) {
-    0: return 6437;
+    0: return 3862;
+    return 0;
+}
+
+switch (FEAT_TRAINS, SELF, sw_power_refrigerated_base, position_in_articulated_veh % 3) {
+    0: return 4184;
     return 0;
 }
 
@@ -670,6 +677,11 @@ switch (FEAT_TRAINS, SELF, sw_power_tr2015_freight_head, sw_mr2015_present()) {
 switch (FEAT_TRAINS, SELF, sw_power_tr2015_freight_mid, sw_mr2015_present()) {
     1: return 0;
     sw_power_freight_mid_base;
+}
+
+switch (FEAT_TRAINS, SELF, sw_power_tr2015_refrigerated, sw_mr2015_present()) {
+    1: return 0;
+    sw_power_refrigerated_base;
 }
 
 switch (FEAT_TRAINS, SELF, sw_traction_head_tr08_base,
@@ -803,7 +815,7 @@ switch (FEAT_TRAINS, SELF, sw_ov_tr2015_mid_graphics,
 // Passenger TR2015: first-class head, 12 passengers.
 switch (FEAT_TRAINS, SELF, sw_power_tr2015_head_base,
     position_in_articulated_veh % 3) {
-    0: return 4829;
+    0: return 2682;
     return 0;
 }
 
@@ -828,7 +840,7 @@ switch (FEAT_TRAINS, SELF, sw_age_tr2015_head,
 // intermediate-car item may be attached.
 switch (FEAT_TRAINS, SELF, sw_power_tr2015_mid_base,
     position_in_articulated_veh % 3) {
-    0: return 3218;
+    0: return 2575;
     return 0;
 }
 
@@ -861,7 +873,7 @@ switch (FEAT_TRAINS, SELF, sw_age_tr2015_mid_second,
     return 0;
 }
 
-// TR2015 freight liveries. The head and every freight car use SELF scope so
+// TR2015F freight liveries. The head and every freight car use SELF scope so
 // their cargo type and livery subtype can be selected independently.
 switch (FEAT_TRAINS, SELF, sw_tr2015_freight_subtype_text, cargo_subtype) {
     0: return string(STR_SUB_T15_RED_DRAGON_FREIGHT);
@@ -1517,8 +1529,8 @@ item (FEAT_TRAINS, tr08_head_first, 100) {
         loading_speed: ((16 * param_capacity) / 100) * (1 << param_loading_mode);
         cargo_age_period: 400 * (1 << param_cargo_age_mode);
         speed: 430 km/h;
-        power: 3600 kW;
-        weight: 52 ton;
+        power: 1920 kW;
+        weight: 48 ton;
         tractive_effort_coefficient: 0.35;
         cost_factor: (130 * param_purchase) / 100;
         running_cost_base: RUNNING_COST_ELECTRIC;
@@ -1550,7 +1562,7 @@ item (FEAT_TRAINS, tr08_head_first, 100) {
         cargo_age_period: sw_age_mid_first;
         loading_speed: ((24 * param_capacity) / 100) * (1 << param_loading_mode);
         power: sw_power_mid_tr08;
-        weight: 48;
+        weight: 53;
         tractive_effort_coefficient: sw_traction_mid_tr08;
         cost_factor: (85 * param_purchase) / 100;
         running_cost_factor: (65 * param_running) / 100;
@@ -1563,7 +1575,7 @@ item (FEAT_TRAINS, tr08_head_first, 100) {
         cargo_age_period: sw_age_mid_second_tr08;
         loading_speed: ((30 * param_capacity) / 100) * (1 << param_loading_mode);
         power: sw_power_mid_tr08;
-        weight: 48;
+        weight: 53;
         tractive_effort_coefficient: sw_traction_mid_tr08;
         cost_factor: (85 * param_purchase) / 100;
         running_cost_factor: (65 * param_running) / 100;
@@ -1595,8 +1607,8 @@ item (FEAT_TRAINS, tr08_head_second, 101) {
         loading_speed: ((20 * param_capacity) / 100) * (1 << param_loading_mode);
         cargo_age_period: 250 * (1 << param_cargo_age_mode);
         speed: 430 km/h;
-        power: 3600 kW;
-        weight: 52 ton;
+        power: 1920 kW;
+        weight: 48 ton;
         tractive_effort_coefficient: 0.35;
         cost_factor: (130 * param_purchase) / 100;
         running_cost_base: RUNNING_COST_ELECTRIC;
@@ -1626,7 +1638,7 @@ item (FEAT_TRAINS, tr08_head_second, 101) {
         cargo_age_period: sw_age_mid_first;
         loading_speed: ((24 * param_capacity) / 100) * (1 << param_loading_mode);
         power: sw_power_mid_tr08;
-        weight: 48;
+        weight: 53;
         tractive_effort_coefficient: sw_traction_mid_tr08;
         cost_factor: (85 * param_purchase) / 100;
         running_cost_factor: (65 * param_running) / 100;
@@ -1639,7 +1651,7 @@ item (FEAT_TRAINS, tr08_head_second, 101) {
         cargo_age_period: sw_age_mid_second_tr08;
         loading_speed: ((30 * param_capacity) / 100) * (1 << param_loading_mode);
         power: sw_power_mid_tr08;
-        weight: 48;
+        weight: 53;
         tractive_effort_coefficient: sw_traction_mid_tr08;
         cost_factor: (85 * param_purchase) / 100;
         running_cost_factor: (65 * param_running) / 100;
@@ -1671,7 +1683,7 @@ item (FEAT_TRAINS, tr2012_head, 102) {
         loading_speed: ((60 * param_capacity) / 100) * (1 << param_loading_mode);
         cargo_age_period: 200 * (1 << param_cargo_age_mode);
         speed: 350 km/h;
-        power: 3000 kW;
+        power: 1600 kW;
         weight: 50 ton;
         tractive_effort_coefficient: 0.32;
         cost_factor: (120 * param_purchase) / 100;
@@ -1888,7 +1900,7 @@ item (FEAT_TRAINS, tr2015_head, 106) {
         cargo_age_period: 1200 * (1 << param_cargo_age_mode);
 
         speed: 450 km/h;
-        power: 3600 kW;
+        power: 2000 kW;
         weight: 50 ton;
         tractive_effort_coefficient: 0.35;
         cost_factor: (61 * param_purchase) / 100;
@@ -1912,7 +1924,7 @@ item (FEAT_TRAINS, tr2015_head, 106) {
         cost_factor: (59 * param_purchase) / 100;
         running_cost_factor: (5 * param_running) / 100;
         purchase_speed: 450;
-        purchase_power: 4829;
+        purchase_power: 2682;
         purchase_weight: 50;
         purchase_running_cost_factor: 44;
         purchase_cargo_capacity: (12 * param_capacity) / 300;
@@ -1960,7 +1972,7 @@ item (FEAT_TRAINS, tr2015_head, 106) {
 }
 
 // ----------------------------------------------------------------------------
-// TR2015 freight head (SSPE / red dragon livery)
+// TR2015F freight head (SSPE / red dragon livery)
 // ----------------------------------------------------------------------------
 item (FEAT_TRAINS, tr2015_freight_head, 107) {
     property {
@@ -1989,7 +2001,7 @@ item (FEAT_TRAINS, tr2015_freight_head, 107) {
         cargo_age_period: 250 * (1 << param_cargo_age_mode);
 
         speed: 450 km/h;
-        power: 4800 kW;
+        power: 3120 kW;
         weight: 50 ton;
         tractive_effort_coefficient: 0.35;
         cost_factor: (76 * param_purchase) / 100;
@@ -2014,7 +2026,7 @@ item (FEAT_TRAINS, tr2015_freight_head, 107) {
         cost_factor: (74 * param_purchase) / 100;
         running_cost_factor: (6 * param_running) / 100;
         purchase_speed: 450;
-        purchase_power: 6437;
+        purchase_power: 4184;
         purchase_weight: 50;
         purchase_running_cost_factor: 55;
         purchase_cargo_capacity: 40 / 3;
@@ -2043,7 +2055,7 @@ item (FEAT_TRAINS, tr2015_freight_head, 107) {
         loading_speed: sw_loading_tr2015_refrigerated;
         cargo_age_period: sw_age_tr2015_refrigerated;
         speed: 450;
-        power: sw_power_tr2015_freight_mid;
+        power: sw_power_tr2015_refrigerated;
         weight: 50;
         tractive_effort_coefficient: sw_traction_freight;
         cost_factor: (128 * param_purchase) / 100;
@@ -2052,7 +2064,7 @@ item (FEAT_TRAINS, tr2015_freight_head, 107) {
 }
 
 // ----------------------------------------------------------------------------
-// TR2015 general freight intermediate car
+// TR2015F general freight intermediate car
 // ----------------------------------------------------------------------------
 item (FEAT_TRAINS, tr2015_freight_mid, 108) {
     property {
@@ -2101,7 +2113,7 @@ item (FEAT_TRAINS, tr2015_freight_mid, 108) {
 }
 
 // ----------------------------------------------------------------------------
-// TR2015 refrigerated intermediate car
+// TR2015F refrigerated intermediate car
 // ----------------------------------------------------------------------------
 item (FEAT_TRAINS, tr2015_refrigerated, 109) {
     property {

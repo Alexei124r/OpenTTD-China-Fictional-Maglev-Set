@@ -2,13 +2,13 @@
 
 [English](README.md)
 
-**DEMO 版本**
+**0.1.1-alpha**
 
 源码地址：<https://github.com/Alexei124r/OpenTTD-China-Fictional-Maglev-Set>
 
 China Fictional Maglev Set 是一个面向 OpenTTD 的非官方架空磁浮车辆包。
-目前包含 Transrapid 08、Transrapid 2012、Transrapid 2015 客运与货运车辆，
-以及 MR2015 磁浮轨道工程车。
+目前包含 TR08、TR2012、TR2015 客运车辆、TR2015F 货运车辆，以及
+MR2015 磁浮轨道工程车。
 
 ![中国架空磁浮车辆包预览](preview/Train_Show1.jpg)
 
@@ -18,7 +18,7 @@ China Fictional Maglev Set 是一个面向 OpenTTD 的非官方架空磁浮车�
 - TR2012 客运头车，9 种涂装。
 - TR2015 客运头车，包含红神龙、银长剑和上海地铁联动涂装。
 - TR2015 一等座、二等座和行李/二等座合造中间车。
-- TR2015 货运头车、通用货运车、冷藏车和行李/二等座合造车。
+- TR2015F 货运头车、通用货运车、冷藏车，以及 TR2015 行李/二等座合造车。
 - MR2015 工程车，支持随编组变化的限速和动力隔离。
 - 可配置载客量、购置费用、运行费用、邮件容量、装卸速率和货物老化周期。
 
