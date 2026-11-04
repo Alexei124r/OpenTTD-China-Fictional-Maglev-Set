@@ -150,9 +150,11 @@ Load the GRF in OpenTTD and test:
 
 1. All purchase-menu entries and refits.
 2. All TR2015 passenger liveries, including the baggage/second-class composite.
-3. Dual-head orientation.
-4. MR2015 power isolation and speed limits.
-5. Save/load compatibility.
+3. The dining car, including the 25% comfort bonus and its exclusion from that
+   bonus.
+4. Dual-head orientation.
+5. MR2015 power isolation and speed limits.
+6. Save/load compatibility.
 
 ## License
 

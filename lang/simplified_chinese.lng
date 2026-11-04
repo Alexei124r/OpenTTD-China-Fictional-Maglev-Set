@@ -13,8 +13,8 @@ STR_PARAM_MAIL_CAPACITY :邮件容量
 STR_PARAM_MAIL_CAPACITY_DESC :所有可运载邮件的车厢的邮件容量倍率。
 STR_PARAM_LOADING_RATE :装卸速率
 STR_PARAM_LOADING_RATE_DESC :所有车辆的装卸速度倍率。
-STR_PARAM_CARGO_AGE :货物老化周期
-STR_PARAM_CARGO_AGE_DESC :所有车辆的货物老化周期倍率。
+STR_PARAM_CARGO_AGE :舒适度/保鲜度倍率
+STR_PARAM_CARGO_AGE_DESC :所有车辆的舒适度（客运）或保鲜度（货运）基础值倍率。
 STR_PARAM_MAIL_X05 :×0.5
 STR_PARAM_MAIL_X1 :×1
 STR_PARAM_MAIL_X2 :×2
@@ -30,25 +30,27 @@ STR_NAME_TR2012_HEAD :Transrapid 2012 头车
 STR_NAME_MID :磁浮中间车
 STR_NAME_MID_FIRST :一等座中间车
 STR_NAME_MID_SECOND :二等座中间车
-STR_DESC_TR08 :磁浮，430 km/h。可挂一等座车、二等座车；可改装选择涂装。
-STR_DESC_TR2012 :磁浮，350 km/h。可挂二等座车；可改装选择涂装。
-STR_DESC_MID :改装选择车型、席别与涂装；动力与容量由所在列车的头车决定。
+STR_DESC_TR08 :磁浮，430 km/h。可挂一等座车、二等座车；可改装选择涂装。{}舒适度：一等座 400；二等座 250。
+STR_DESC_TR2012 :磁浮，350 km/h。可挂二等座车；可改装选择涂装。{}舒适度：200。
+STR_DESC_MID :改装选择车型、席别与涂装；动力与容量由所在列车的头车决定。{}舒适度：随所挂客运头车；有餐车时增加 25%。
 STR_NAME_MAGLEV_TRANSRANGER_2015 :TR2015 TransRanger 工程车
-STR_DESC_MAGLEV_TRANSRANGER_2015 :磁浮工程与牵引车，单独运行 160 km/h；连挂客运列车时整列限速 100 km/h。
+STR_DESC_MAGLEV_TRANSRANGER_2015 :磁浮工程与牵引车，单独运行 160 km/h；连挂客运列车时整列限速 100 km/h。{}舒适度：200。
 STR_DESC_MAGLEV_TRANSRANGER_2015_SIMPLE :磁浮工程与牵引车，最高速度 160 km/h。无编组动态限速的兼容版本。
 STR_NAME_MR2015 :Maglevranger 2015（MR2015）工程车
-STR_DESC_MR2015 :磁浮工程与牵引车，单独运行 160 km/h；连挂客运列车时整列限速 100 km/h。
+STR_DESC_MR2015 :磁浮工程与牵引车，单独运行 160 km/h；连挂客运列车时整列限速 100 km/h。{}舒适度：200。
 STR_NAME_TR2015_HEAD :TR2015 客运头车
-STR_DESC_TR2015_HEAD :磁浮客运头车，最高速度 450 km/h。可挂一等座车、二等座车、行李/二等座合造车；餐车预留。改装可选择涂装。
+STR_DESC_TR2015_HEAD :磁浮客运头车，最高速度 450 km/h。可挂一等座车、二等座车、行李/二等座合造车和餐车。改装可选择涂装。{}舒适度：头车 1200；一等座车 1200；二等座车 250；合造车旅客部分 250。有餐车时，其它客运部分增加 25%。
 STR_NAME_TR2015_FREIGHT_HEAD :TR2015F 货运头车
-STR_DESC_TR2015_FREIGHT_HEAD :磁浮货运头车，最高速度 450 km/h。可挂载货运车、冷藏车。
+STR_DESC_TR2015_FREIGHT_HEAD :磁浮货运头车，最高速度 450 km/h。可挂载货运车、冷藏车。{}保鲜度：邮件 370；其它货物 250。
 STR_NAME_TR2015_FREIGHT_MID :TR2015F 磁浮货运车
-STR_DESC_TR2015_FREIGHT_MID :磁浮货运中间车，需要 TR2015F 货运头车提供动力。
+STR_DESC_TR2015_FREIGHT_MID :磁浮货运中间车，需要 TR2015F 货运头车提供动力。{}保鲜度：邮件 370；其它货物 250。
 STR_NAME_TR2015_REFRIGERATED :TR2015F 磁浮冷藏车
-STR_DESC_TR2015_REFRIGERATED :磁浮冷藏货运中间车，需要 TR2015F 货运头车提供动力。
+STR_DESC_TR2015_REFRIGERATED :磁浮冷藏货运中间车，需要 TR2015F 货运头车提供动力。{}保鲜度：1600。
 STR_NAME_TR2015_ZEXL :TR2015 行李/二等座合造车
-STR_DESC_TR2015_ZEXL :邮件与旅客合造车厢，目前只能挂在 TR2015 客运头车之后。
+STR_DESC_TR2015_ZEXL :邮件与旅客合造车厢，只能挂在 TR2015 客运头车之后。{}舒适度：旅客部分 250；有餐车时增加 25%。{}保鲜度：邮件 400。
 STR_NAME_TR2015_ZEXL_PASSENGER :TR2015 合造车旅客部分
+STR_NAME_TR2015_DINING :TR2015 餐车
+STR_DESC_TR2015_DINING :复用行李/二等座合造车图像的磁浮餐车，可为同编组其它客运车厢增加 25% 舒适度。餐车自身舒适度为 400。
 STR_SUB_TR08_A_F :白红
 STR_SUB_TR08_A_S :白红
 STR_SUB_TR08_B_F :朱红金

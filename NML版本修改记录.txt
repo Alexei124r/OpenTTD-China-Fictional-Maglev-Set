@@ -294,3 +294,53 @@ NML 修改:
 
 编译:
   nmlc 0.8.1 编译成功，472 sprites，12 个车辆 item。
+
+
+2026-11-04 NML v2.3
+--------------------
+修改:
+  1. 新增 TR2015 餐车（item 112），复用行李/二等座合造车的三套涂装图像。
+     餐车默认 48 t、1920 kW、牵引力系数 0.32、48 名旅客、
+     cargo_age_period 400；旅客装卸速率为 12/40 tick（默认容量下）。
+  2. 餐车使用 bitmask_vehicle_info 的 bit1 标记。整列其它客运部分的
+     cargo_age_period 在有餐车时乘以 5/4，餐车自身不享受该加成。
+  3. TR2015 客运头车允许挂接餐车，并为餐车添加完整的 livery_override
+     回调和动态功率隔离。
+  4. TR08 头车/中间车按重量不变、36 kW/t 调整为 1728/1908 kW，
+     牵引力系数改为 0.28。
+  5. TR2012 头车/中间车调整为 1530/1407 kW，牵引力系数保持 0.32。
+  6. TR2015 头车/中间车保持 2000/1920 kW，牵引力系数改为 0.30。
+  7. 同步更新静态 Action 0、动态功率 HP 回调和购买菜单功率。
+  8. 中英文语言文件把 cargo_age_period 对玩家显示为客运“舒适度”、
+     货运“保鲜度”，并在各车辆简介中增加一行数值说明。
+  9. TR2015F 与 MR2015 的功率、重量和牵引力未改变。
+
+编译:
+  nmlc 0.8.1 编译成功，472 sprites，13 个车辆 item。
+  NML SHA-256:
+    6337F979894A5E35B7A10452F9B6B215A5F6EC7FC1BB666D117BF4D7EA345232
+  GRF SHA-256:
+    FA477E1FCEEE05687CE3786B4AC37E56DE68EFE3A41A6DE45B6ABEFF512A0E2A
+
+
+2026-11-04 NML v2.4（release 0.1.2-alpha）
+------------------------------------------
+修改:
+  1. GRF 内部版本号由 1 更新为 2，最低兼容版本保持 1。
+  2. README、BUILDING 和 CHANGELOG 更新到 0.1.2-alpha，并写入餐车、
+     舒适度/保鲜度和新车辆参数。
+  3. 新增 PUBLISHING.md，区分 GitHub 源码仓库内容与 BaNaNaS 发布内容。
+  4. 新增 package_bananas.ps1，生成只包含 GRF、readme.txt、
+     license.txt 和 changelog.txt 的 BaNaNaS tar 包。
+  5. push_retry.bat 升级为完整流程：重新编译、git add、commit、
+     push，并在网络失败时重试。
+  6. .gitignore 增加 tar、7z、备份和 Office 临时文件规则。
+
+编译与打包:
+  nmlc 0.8.1 编译成功，472 sprites，13 个车辆 item。
+  NML SHA-256:
+    71BC356F80513EEB12BC52937BF8F366DF23C577348C4AF19A51A4B9264E880B
+  GRF SHA-256:
+    DB64FE8762D86D5DE13FDC24606EE62A90211AF04BDE9F3AD79DF88133A48A54
+  BaNaNaS TAR SHA-256:
+    91903B57E3289476F8478B95253A8781E0A8A7894EFE5A40994370B8340DBE22

@@ -4,6 +4,8 @@
 # local backups and archives
 backup_*/
 *.zip
+*.tar
+*.7z
 *.rar
 /dist/
 
@@ -20,3 +22,5 @@ backup_*/
 .idea/
 Thumbs.db
 desktop.ini
+~$*
+*.bak

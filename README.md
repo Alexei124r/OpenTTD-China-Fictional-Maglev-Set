@@ -2,7 +2,7 @@
 
 [中文说明](README_zh.md)
 
-**0.1.1-alpha**
+**0.1.2-alpha**
 
 Source: <https://github.com/Alexei124r/OpenTTD-China-Fictional-Maglev-Set>
 
@@ -18,15 +18,15 @@ freight stock, and the MR2015 maglev engineering vehicle.
 - TR2012 passenger head cars in nine liveries.
 - TR2015 passenger head car with Red Dragon, Silver Sword and Shanghai Metro
   Link liveries.
-- TR2015 first-class, second-class and baggage/second-class intermediate cars.
-- TR2015F freight head, general freight, refrigerated and baggage/second-class
-  stock.
+- TR2015 first-class, second-class, baggage/second-class composite and dining
+  cars.
+- TR2015F freight head, general freight and refrigerated cars.
 - MR2015 engineering/towing vehicle with consist-dependent speed and power
   isolation.
 - Configurable passenger capacity, purchase cost, running cost, mail capacity,
-  loading speed and cargo ageing.
+  loading speed, passenger comfort and freight freshness.
 
-This demo is not feature complete. A dining car, additional train models and
+This alpha release is not yet feature complete. Additional train models and
 other content are planned for later updates.
 
 ## Vehicle mechanics
@@ -41,9 +41,10 @@ mixed with passenger or freight rolling stock, the consist is limited to
 
 ## Installation
 
-After the first public release, the GRF will be available through OpenTTD's
-online content service. Until then, place `china_fictional_maglev.grf` in your
-OpenTTD `newgrf` directory and enable it in NewGRF Settings.
+The released GRF is available through OpenTTD's online content service under
+the name **China Fictional Maglev Set**. You can also place
+`china_fictional_maglev.grf` in your OpenTTD `newgrf` directory and enable it
+in NewGRF Settings.
 
 ## Building
 
@@ -56,6 +57,9 @@ Quick build using the existing processed game sprites:
 nmlc -c -l lang --default-lang=english.lng `
   -o china_fictional_maglev.grf china_fictional_maglev.nml
 ```
+
+Release upload and packaging steps are documented in
+[PUBLISHING.md](PUBLISHING.md).
 
 ## Credits
 

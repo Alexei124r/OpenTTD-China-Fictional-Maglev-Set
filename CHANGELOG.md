@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.2-alpha - 2026-11-04
+
+- Added the TR2015 dining car, reusing the baggage/second-class composite
+  sprites and adding 25% passenger comfort to the rest of the consist.
+- Rebalanced TR08, TR2012 and TR2015 power, weight and tractive effort values.
+- Renamed the cargo ageing parameter and vehicle descriptions to passenger
+  comfort / freight freshness, with the values shown in each vehicle's
+  purchase description.
+
 ## 0.1.1-alpha - 2026-11-03
 
 - Renamed the passenger family to TR2015 and the freight family to TR2015F.

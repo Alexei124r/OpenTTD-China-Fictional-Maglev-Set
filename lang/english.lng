@@ -13,8 +13,8 @@ STR_PARAM_MAIL_CAPACITY :Mail capacity
 STR_PARAM_MAIL_CAPACITY_DESC :Mail capacity multiplier for all mail-capable vehicles.
 STR_PARAM_LOADING_RATE :Loading speed
 STR_PARAM_LOADING_RATE_DESC :Loading and unloading speed multiplier for all vehicles.
-STR_PARAM_CARGO_AGE :Cargo age period
-STR_PARAM_CARGO_AGE_DESC :Cargo age period multiplier for all vehicles.
+STR_PARAM_CARGO_AGE :Comfort / freshness multiplier
+STR_PARAM_CARGO_AGE_DESC :Multiplier for passenger comfort or freight freshness base values.
 STR_PARAM_MAIL_X05 :x0.5
 STR_PARAM_MAIL_X1 :x1
 STR_PARAM_MAIL_X2 :x2
@@ -30,25 +30,27 @@ STR_NAME_TR2012_HEAD :Transrapid 2012 Head Car
 STR_NAME_MID :Maglev Intermediate Car
 STR_NAME_MID_FIRST :First Class Intermediate Car
 STR_NAME_MID_SECOND :Second Class Intermediate Car
-STR_DESC_TR08 :Maglev, 430 km/h. Can attach first-class and second-class intermediate cars. Refit selects livery.
-STR_DESC_TR2012 :Maglev, 350 km/h. Can attach second-class intermediate cars. Refit selects livery.
-STR_DESC_MID :Refit for type, class and livery. Power and capacity are set by the leading head car.
+STR_DESC_TR08 :Maglev, 430 km/h. Can attach first-class and second-class intermediate cars. Refit selects livery.{}Comfort: first class 400; second class 250.
+STR_DESC_TR2012 :Maglev, 350 km/h. Can attach second-class intermediate cars. Refit selects livery.{}Comfort: 200.
+STR_DESC_MID :Refit for type, class and livery. Power and capacity are set by the leading head car.{}Comfort follows the passenger head car; +25% with a dining car.
 STR_NAME_MAGLEV_TRANSRANGER_2015 :TR2015 TransRanger Engineering Car
-STR_DESC_MAGLEV_TRANSRANGER_2015 :Maglev engineering and towing car. 160 km/h alone; mixed passenger consists are limited to 100 km/h.
+STR_DESC_MAGLEV_TRANSRANGER_2015 :Maglev engineering and towing car. 160 km/h alone; mixed passenger consists are limited to 100 km/h.{}Comfort: 200.
 STR_DESC_MAGLEV_TRANSRANGER_2015_SIMPLE :Maglev engineering and towing car, 160 km/h. Static compatibility version without consist-dependent limits.
 STR_NAME_MR2015 :Maglevranger 2015 (MR2015) Engineering Car
-STR_DESC_MR2015 :Maglev engineering and towing car. 160 km/h alone; mixed passenger consists are limited to 100 km/h.
+STR_DESC_MR2015 :Maglev engineering and towing car. 160 km/h alone; mixed passenger consists are limited to 100 km/h.{}Comfort: 200.
 STR_NAME_TR2015_HEAD :TR2015 Passenger Head Car
-STR_DESC_TR2015_HEAD :Maglev passenger head car, 450 km/h. Can attach first-class, second-class and baggage/second-class composite cars; a dining car is reserved. Refit selects livery.
+STR_DESC_TR2015_HEAD :Maglev passenger head car, 450 km/h. Can attach first-class, second-class, baggage/second-class composite and dining cars. Refit selects livery.{}Comfort: head car 1200; first class 1200; second class 250; composite passenger section 250. A dining car adds 25% to the other passenger sections.
 STR_NAME_TR2015_FREIGHT_HEAD :TR2015F Freight Head Car
-STR_DESC_TR2015_FREIGHT_HEAD :Maglev freight head car, 450 km/h. Can attach freight and refrigerated cars.
+STR_DESC_TR2015_FREIGHT_HEAD :Maglev freight head car, 450 km/h. Can attach freight and refrigerated cars.{}Freshness: mail 370; other cargo 250.
 STR_NAME_TR2015_FREIGHT_MID :TR2015F Freight Car
-STR_DESC_TR2015_FREIGHT_MID :Maglev freight car. Requires a TR2015F freight head car for traction.
+STR_DESC_TR2015_FREIGHT_MID :Maglev freight car. Requires a TR2015F freight head car for traction.{}Freshness: mail 370; other cargo 250.
 STR_NAME_TR2015_REFRIGERATED :TR2015F Refrigerated Car
-STR_DESC_TR2015_REFRIGERATED :Maglev refrigerated freight car. Requires a TR2015F freight head car for traction.
+STR_DESC_TR2015_REFRIGERATED :Maglev refrigerated freight car. Requires a TR2015F freight head car for traction.{}Freshness: 1600.
 STR_NAME_TR2015_ZEXL :TR2015 Baggage/Second-Class Composite Car
-STR_DESC_TR2015_ZEXL :Combined mail and passenger car. Currently may only be attached behind the TR2015 passenger head car.
+STR_DESC_TR2015_ZEXL :Combined mail and passenger car. May only be attached behind the TR2015 passenger head car.{}Comfort: passenger section 250; +25% with a dining car.{}Freshness: mail 400.
 STR_NAME_TR2015_ZEXL_PASSENGER :TR2015 Composite Passenger Section
+STR_NAME_TR2015_DINING :TR2015 Dining Car
+STR_DESC_TR2015_DINING :Maglev dining car reusing the baggage/second-class composite sprites. Adds 25% comfort to other passenger sections in the consist. Its own comfort is 400.
 STR_SUB_TR08_A_F :White / Red
 STR_SUB_TR08_A_S :White / Red
 STR_SUB_TR08_B_F :Vermilion / Gold

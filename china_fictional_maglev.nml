@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Andy, Bob, Carl, Dennis, Eric, Frank
 // ============================================================================
 // China Fictional Maglev Set
-// NML source, 2026-11-03 v2.2 (release 0.1.1-alpha)
+// NML source, 2026-11-04 v2.4 (release 0.1.2-alpha)
 //
 // Liveries:
 //   TR08   : A white/red, C Shanghai Maglev, G RZD red/white/grey
@@ -12,7 +12,7 @@
 //            H Shanghai bus link
 //   TR2015 : red dragon / silver sword, first/second class mid consist
 //
-// Purchase list (7 items):
+// Purchase list:
 //   tr08_head_first   Transrapid 08 head car, first class
 //   tr08_head_second  Transrapid 08 head car, second class
 //   tr2012_head       Transrapid 2012 head car, second class only
@@ -20,6 +20,7 @@
 //   mid_second        second class intermediate car (TR08 + TR2012 + TR2015)
 //   maglevranger_2015 MR2015 engineering car
 //   tr2015_head       TR2015 passenger head car
+//   tr2015_dining     TR2015 dining car
 //
 // Every item is a 2 + 8 + 2 articulated unit = 12/16 tile = 0.75 tile.
 // Only the middle articulated part carries a sprite. With two regular head
@@ -44,7 +45,7 @@ grf {
     name: string(STR_GRF_NAME);
     desc: string(STR_GRF_DESC);
     url: string(STR_GRF_URL);
-    version: 1;
+    version: 2;
     min_compatible_version: 1;
     param 0 {
         param_capacity {
@@ -596,34 +597,43 @@ switch (FEAT_TRAINS, SELF, sw_cargo_age_scale, param_cargo_age_mode) {
     return 4;
 }
 
+// bit1 marks a dining car. bitmask_consist_info is the OR of every vehicle's
+// bitmask_vehicle_info, so the state is visible from either end of the train.
+switch (FEAT_TRAINS, PARENT, sw_dining_decay_factor,
+    hasbit(bitmask_consist_info, 1)) {
+    1: return 5;
+    return 4;
+}
+
 // Power callbacks are given in HP (the unit of the power callback).
 // Only articulated part 0 is powered, the other two parts report 0 so the
 // power of an item is not counted three times.
-//   1920 kW = 2575 hp
-//   2080 kW = 2789 hp
-//   1600 kW = 2146 hp
-//   1472 kW = 1974 hp
+//   1728 kW = 2317 hp
+//   1908 kW = 2559 hp
+//   1530 kW = 2052 hp
+//   1407 kW = 1887 hp
 //   2000 kW = 2682 hp
+//   1920 kW = 2575 hp
 //   3120 kW = 4184 hp
 //   2880 kW = 3862 hp
 //   6400 kW = 8582 hp
 switch (FEAT_TRAINS, SELF, sw_power_head_tr08_base, position_in_articulated_veh % 3) {
-    0: return 2575;
+    0: return 2317;
     return 0;
 }
 
 switch (FEAT_TRAINS, SELF, sw_power_head_tr2012_base, position_in_articulated_veh % 3) {
-    0: return 2146;
+    0: return 2052;
     return 0;
 }
 
 switch (FEAT_TRAINS, SELF, sw_power_mid_tr08_base, position_in_articulated_veh % 3) {
-    0: return 2789;
+    0: return 2559;
     return 0;
 }
 
 switch (FEAT_TRAINS, SELF, sw_power_mid_tr2012_base, position_in_articulated_veh % 3) {
-    0: return 1974;
+    0: return 1887;
     return 0;
 }
 
@@ -686,7 +696,7 @@ switch (FEAT_TRAINS, SELF, sw_power_tr2015_refrigerated, sw_mr2015_present()) {
 
 switch (FEAT_TRAINS, SELF, sw_traction_head_tr08_base,
     position_in_articulated_veh % 3) {
-    0: return 89;
+    0: return 71;
     return 0;
 }
 
@@ -698,7 +708,7 @@ switch (FEAT_TRAINS, SELF, sw_traction_head_tr2012_base,
 
 switch (FEAT_TRAINS, SELF, sw_traction_tr2015_head_base,
     position_in_articulated_veh % 3) {
-    0: return 89;
+    0: return 77;
     return 0;
 }
 
@@ -719,7 +729,7 @@ switch (FEAT_TRAINS, SELF, sw_traction_tr2015_head, sw_mr2015_present()) {
 
 switch (FEAT_TRAINS, SELF, sw_traction_mid_tr08, sw_mr2015_present()) {
     1: return 0;
-    return 89;
+    return 71;
 }
 
 switch (FEAT_TRAINS, SELF, sw_traction_mid_tr2012, sw_mr2015_present()) {
@@ -729,7 +739,13 @@ switch (FEAT_TRAINS, SELF, sw_traction_mid_tr2012, sw_mr2015_present()) {
 
 switch (FEAT_TRAINS, SELF, sw_traction_tr2015_mid, sw_mr2015_present()) {
     1: return 0;
-    return 89;
+    return 77;
+}
+
+switch (FEAT_TRAINS, SELF, sw_traction_tr2015_dining,
+    sw_mr2015_present()) {
+    1: return 0;
+    return 82;
 }
 
 switch (FEAT_TRAINS, SELF, sw_traction_freight, sw_mr2015_present()) {
@@ -832,7 +848,7 @@ switch (FEAT_TRAINS, SELF, sw_cap_tr2015_head,
 
 switch (FEAT_TRAINS, SELF, sw_age_tr2015_head,
     position_in_articulated_veh % 3) {
-    1: return 1200 * sw_cargo_age_scale();
+    1: return (1200 * sw_cargo_age_scale() * sw_dining_decay_factor()) / 4;
     return 0;
 }
 
@@ -845,6 +861,12 @@ switch (FEAT_TRAINS, SELF, sw_power_tr2015_mid_base,
 }
 
 switch (FEAT_TRAINS, SELF, sw_power_tr2015_mid, sw_mr2015_present()) {
+    1: return 0;
+    sw_power_tr2015_mid_base;
+}
+
+switch (FEAT_TRAINS, SELF, sw_power_tr2015_dining,
+    sw_mr2015_present()) {
     1: return 0;
     sw_power_tr2015_mid_base;
 }
@@ -863,13 +885,13 @@ switch (FEAT_TRAINS, SELF, sw_cap_tr2015_mid_second,
 
 switch (FEAT_TRAINS, SELF, sw_age_tr2015_mid_first,
     position_in_articulated_veh % 3) {
-    1: return 1200 * sw_cargo_age_scale();
+    1: return (1200 * sw_cargo_age_scale() * sw_dining_decay_factor()) / 4;
     return 0;
 }
 
 switch (FEAT_TRAINS, SELF, sw_age_tr2015_mid_second,
     position_in_articulated_veh % 3) {
-    1: return 250 * sw_cargo_age_scale();
+    1: return (250 * sw_cargo_age_scale() * sw_dining_decay_factor()) / 4;
     return 0;
 }
 
@@ -949,6 +971,14 @@ switch (FEAT_TRAINS, PARENT, sw_parent_tr2015_zexl_livery, cargo_subtype) {
 }
 
 switch (FEAT_TRAINS, SELF, sw_tr2015_zexl_passenger_graphics,
+    position_in_articulated_veh % 3) {
+    1: sw_parent_tr2015_zexl_livery;
+    empty_sprites;
+}
+
+// The dining car reuses the baggage/second-class composite sprite sheets.
+// It is its own item so it can be bought, attached and priced independently.
+switch (FEAT_TRAINS, SELF, sw_tr2015_dining_graphics,
     position_in_articulated_veh % 3) {
     1: sw_parent_tr2015_zexl_livery;
     empty_sprites;
@@ -1070,15 +1100,35 @@ switch (FEAT_TRAINS, SELF, sw_cap_tr2015_zexl_passenger,
     return 0;
 }
 
+// Dining-car capacity is 48 passengers at the default capacity setting.
+switch (FEAT_TRAINS, SELF, sw_cap_tr2015_dining,
+    position_in_articulated_veh % 3) {
+    1: return (48 * param_capacity) / 100;
+    return 0;
+}
+
 switch (FEAT_TRAINS, SELF, sw_loading_tr2015_zexl_passenger,
     position_in_articulated_veh % 3) {
     1: return 15 * sw_loading_scale();
     return 0;
 }
 
+switch (FEAT_TRAINS, SELF, sw_loading_tr2015_dining,
+    position_in_articulated_veh % 3) {
+    1: return ((12 * param_capacity) / 100) * sw_loading_scale();
+    return 0;
+}
+
 switch (FEAT_TRAINS, SELF, sw_age_tr2015_zexl_passenger,
     position_in_articulated_veh % 3) {
-    1: return 250 * sw_cargo_age_scale();
+    1: return (250 * sw_cargo_age_scale() * sw_dining_decay_factor()) / 4;
+    return 0;
+}
+
+// The dining car is the marker vehicle and is excluded from the +25% bonus.
+switch (FEAT_TRAINS, SELF, sw_age_tr2015_dining,
+    position_in_articulated_veh % 3) {
+    1: return 400 * sw_cargo_age_scale();
     return 0;
 }
 
@@ -1141,6 +1191,12 @@ switch (FEAT_TRAINS, SELF, sw_tr2015_zexl_articulated,
     return CB_RESULT_NO_MORE_ARTICULATED_PARTS;
 }
 
+switch (FEAT_TRAINS, SELF, sw_tr2015_dining_articulated,
+    extra_callback_info1) {
+    1..2: return tr2015_dining;
+    return CB_RESULT_NO_MORE_ARTICULATED_PARTS;
+}
+
 // Head car capacity (only the middle part carries the passenger compartment)
 switch (FEAT_TRAINS, SELF, sw_cap_tr08_head_first, position_in_articulated_veh % 3) {
     1: return (60 * param_capacity) / 100;
@@ -1156,15 +1212,15 @@ switch (FEAT_TRAINS, SELF, sw_cap_tr2012_head, position_in_articulated_veh % 3) 
 }
 
 switch (FEAT_TRAINS, SELF, sw_age_tr08_head_first, position_in_articulated_veh % 3) {
-    1: return 400 * sw_cargo_age_scale();
+    1: return (400 * sw_cargo_age_scale() * sw_dining_decay_factor()) / 4;
     return 0;
 }
 switch (FEAT_TRAINS, SELF, sw_age_tr08_head_second, position_in_articulated_veh % 3) {
-    1: return 250 * sw_cargo_age_scale();
+    1: return (250 * sw_cargo_age_scale() * sw_dining_decay_factor()) / 4;
     return 0;
 }
 switch (FEAT_TRAINS, SELF, sw_age_tr2012_head, position_in_articulated_veh % 3) {
-    1: return 200 * sw_cargo_age_scale();
+    1: return (200 * sw_cargo_age_scale() * sw_dining_decay_factor()) / 4;
     return 0;
 }
 
@@ -1184,15 +1240,15 @@ switch (FEAT_TRAINS, SELF, sw_cap_mid_second_tr2012, position_in_articulated_veh
 }
 
 switch (FEAT_TRAINS, SELF, sw_age_mid_first, position_in_articulated_veh % 3) {
-    1: return 400 * sw_cargo_age_scale();
+    1: return (400 * sw_cargo_age_scale() * sw_dining_decay_factor()) / 4;
     return 0;
 }
 switch (FEAT_TRAINS, SELF, sw_age_mid_second_tr08, position_in_articulated_veh % 3) {
-    1: return 250 * sw_cargo_age_scale();
+    1: return (250 * sw_cargo_age_scale() * sw_dining_decay_factor()) / 4;
     return 0;
 }
 switch (FEAT_TRAINS, SELF, sw_age_mid_second_tr2012, position_in_articulated_veh % 3) {
-    1: return 200 * sw_cargo_age_scale();
+    1: return (200 * sw_cargo_age_scale() * sw_dining_decay_factor()) / 4;
     return 0;
 }
 
@@ -1488,7 +1544,7 @@ switch (FEAT_TRAINS, SELF, sw_tr2015_can_attach, vehicle_type_id) {
     mid_first: sw_regular_attach_allowed;
     mid_second: sw_regular_attach_allowed;
     tr2015_zexl: sw_regular_attach_allowed;
-    // Reserved for a future dining-car item ID.
+    tr2015_dining: sw_regular_attach_allowed;
     return CB_RESULT_ATTACH_DISALLOW;
 }
 
@@ -1529,9 +1585,9 @@ item (FEAT_TRAINS, tr08_head_first, 100) {
         loading_speed: ((16 * param_capacity) / 100) * (1 << param_loading_mode);
         cargo_age_period: 400 * (1 << param_cargo_age_mode);
         speed: 430 km/h;
-        power: 1920 kW;
+        power: 1728 kW;
         weight: 48 ton;
-        tractive_effort_coefficient: 0.35;
+        tractive_effort_coefficient: 0.28;
         cost_factor: (130 * param_purchase) / 100;
         running_cost_base: RUNNING_COST_ELECTRIC;
         running_cost_factor: (100 * param_running) / 100;
@@ -1550,6 +1606,7 @@ item (FEAT_TRAINS, tr08_head_first, 100) {
         cargo_age_period: sw_age_tr08_head_first;
         power: sw_power_head_tr08;
         tractive_effort_coefficient: sw_traction_head_tr08;
+        purchase_power: 2317;
         // Purchase menu shows value * number of articulated parts, so divide
         // by 3 to display the real 60 seats.
         purchase_cargo_capacity: (60 * param_capacity) / 300;
@@ -1564,6 +1621,7 @@ item (FEAT_TRAINS, tr08_head_first, 100) {
         power: sw_power_mid_tr08;
         weight: 53;
         tractive_effort_coefficient: sw_traction_mid_tr08;
+        purchase_power: 2559;
         cost_factor: (85 * param_purchase) / 100;
         running_cost_factor: (65 * param_running) / 100;
     }
@@ -1577,6 +1635,7 @@ item (FEAT_TRAINS, tr08_head_first, 100) {
         power: sw_power_mid_tr08;
         weight: 53;
         tractive_effort_coefficient: sw_traction_mid_tr08;
+        purchase_power: 2559;
         cost_factor: (85 * param_purchase) / 100;
         running_cost_factor: (65 * param_running) / 100;
     }
@@ -1607,9 +1666,9 @@ item (FEAT_TRAINS, tr08_head_second, 101) {
         loading_speed: ((20 * param_capacity) / 100) * (1 << param_loading_mode);
         cargo_age_period: 250 * (1 << param_cargo_age_mode);
         speed: 430 km/h;
-        power: 1920 kW;
+        power: 1728 kW;
         weight: 48 ton;
-        tractive_effort_coefficient: 0.35;
+        tractive_effort_coefficient: 0.28;
         cost_factor: (130 * param_purchase) / 100;
         running_cost_base: RUNNING_COST_ELECTRIC;
         running_cost_factor: (100 * param_running) / 100;
@@ -1628,6 +1687,7 @@ item (FEAT_TRAINS, tr08_head_second, 101) {
         cargo_age_period: sw_age_tr08_head_second;
         power: sw_power_head_tr08;
         tractive_effort_coefficient: sw_traction_head_tr08;
+        purchase_power: 2317;
         purchase_cargo_capacity: (90 * param_capacity) / 300;
     }
     livery_override(mid_first) {
@@ -1640,6 +1700,7 @@ item (FEAT_TRAINS, tr08_head_second, 101) {
         power: sw_power_mid_tr08;
         weight: 53;
         tractive_effort_coefficient: sw_traction_mid_tr08;
+        purchase_power: 2559;
         cost_factor: (85 * param_purchase) / 100;
         running_cost_factor: (65 * param_running) / 100;
     }
@@ -1653,6 +1714,7 @@ item (FEAT_TRAINS, tr08_head_second, 101) {
         power: sw_power_mid_tr08;
         weight: 53;
         tractive_effort_coefficient: sw_traction_mid_tr08;
+        purchase_power: 2559;
         cost_factor: (85 * param_purchase) / 100;
         running_cost_factor: (65 * param_running) / 100;
     }
@@ -1683,7 +1745,7 @@ item (FEAT_TRAINS, tr2012_head, 102) {
         loading_speed: ((60 * param_capacity) / 100) * (1 << param_loading_mode);
         cargo_age_period: 200 * (1 << param_cargo_age_mode);
         speed: 350 km/h;
-        power: 1600 kW;
+        power: 1530 kW;
         weight: 50 ton;
         tractive_effort_coefficient: 0.32;
         cost_factor: (120 * param_purchase) / 100;
@@ -1704,6 +1766,7 @@ item (FEAT_TRAINS, tr2012_head, 102) {
         cargo_age_period: sw_age_tr2012_head;
         power: sw_power_head_tr2012;
         tractive_effort_coefficient: sw_traction_head_tr2012;
+        purchase_power: 2052;
         purchase_cargo_capacity: (150 * param_capacity) / 300;
     }
     livery_override(mid_second) {
@@ -1716,6 +1779,7 @@ item (FEAT_TRAINS, tr2012_head, 102) {
         power: sw_power_mid_tr2012;
         weight: 46;
         tractive_effort_coefficient: sw_traction_mid_tr2012;
+        purchase_power: 1887;
         cost_factor: (80 * param_purchase) / 100;
         running_cost_factor: (60 * param_running) / 100;
     }
@@ -1902,7 +1966,7 @@ item (FEAT_TRAINS, tr2015_head, 106) {
         speed: 450 km/h;
         power: 2000 kW;
         weight: 50 ton;
-        tractive_effort_coefficient: 0.35;
+        tractive_effort_coefficient: 0.30;
         cost_factor: (61 * param_purchase) / 100;
         running_cost_base: RUNNING_COST_ELECTRIC;
         running_cost_factor: (5 * param_running) / 100;
@@ -1939,6 +2003,7 @@ item (FEAT_TRAINS, tr2015_head, 106) {
         power: sw_power_tr2015_mid;
         weight: 48;
         tractive_effort_coefficient: sw_traction_tr2015_mid;
+        purchase_power: 2575;
         cost_factor: (85 * param_purchase) / 100;
         running_cost_factor: (13 * param_running) / 100;
     }
@@ -1952,6 +2017,7 @@ item (FEAT_TRAINS, tr2015_head, 106) {
         power: sw_power_tr2015_mid;
         weight: 48;
         tractive_effort_coefficient: sw_traction_tr2015_mid;
+        purchase_power: 2575;
         cost_factor: (85 * param_purchase) / 100;
         running_cost_factor: (13 * param_running) / 100;
     }
@@ -1966,6 +2032,22 @@ item (FEAT_TRAINS, tr2015_head, 106) {
         power: sw_power_tr2015_mid;
         weight: 50;
         tractive_effort_coefficient: sw_traction_tr2015_mid;
+        purchase_power: 2575;
+        cost_factor: (85 * param_purchase) / 100;
+        running_cost_factor: (13 * param_running) / 100;
+    }
+    livery_override(tr2015_dining) {
+        default: sw_tr2015_dining_graphics;
+        articulated_part: sw_tr2015_dining_articulated;
+        length: sw_length_2_8_2;
+        cargo_capacity: sw_cap_tr2015_dining;
+        loading_speed: sw_loading_tr2015_dining;
+        cargo_age_period: sw_age_tr2015_dining;
+        speed: 450;
+        power: sw_power_tr2015_dining;
+        weight: 48;
+        tractive_effort_coefficient: sw_traction_tr2015_dining;
+        purchase_power: 2575;
         cost_factor: (85 * param_purchase) / 100;
         running_cost_factor: (13 * param_running) / 100;
     }
@@ -2239,6 +2321,55 @@ item (FEAT_TRAINS, tr2015_zexl_passenger, 111) {
         loading_speed: sw_loading_tr2015_zexl_passenger;
         cargo_age_period: sw_age_tr2015_zexl_passenger;
         purchase_cargo_capacity: 60 / 3;
+    }
+}
+
+// ----------------------------------------------------------------------------
+// TR2015 dining car
+// ----------------------------------------------------------------------------
+// Reuses the baggage/second-class composite sprites. bit1 in
+// bitmask_vehicle_info feeds the +25% comfort callback used by passenger cars.
+item (FEAT_TRAINS, tr2015_dining, 112) {
+    property {
+        name: string(STR_NAME_TR2015_DINING);
+        sprite_id: SPRITE_ID_NEW_TRAIN;
+        misc_flags: bitmask(TRAIN_FLAG_MU);
+        engine_class: ENGINE_CLASS_MAGLEV;
+        climates_available: ALL_CLIMATES;
+        introduction_date: date(2015,1,1);
+        model_life: 25;
+        vehicle_life: 30;
+        track_type: MGLV;
+        refittable_cargo_classes: bitmask(CC_PASSENGERS);
+        non_refittable_cargo_classes: 0;
+        cargo_allow_refit: [PASS];
+        cargo_disallow_refit: [];
+        refit_cost: 0;
+        default_cargo_type: PASS;
+        ai_special_flag: AI_FLAG_PASSENGER;
+        cargo_capacity: 1;
+        loading_speed: 12 * (1 << param_loading_mode);
+        cargo_age_period: 400 * (1 << param_cargo_age_mode);
+        speed: 0 km/h;
+        power: 0;
+        weight: 48 ton;
+        tractive_effort_coefficient: 0;
+        cost_factor: (85 * param_purchase) / 100;
+        running_cost_base: RUNNING_COST_ELECTRIC;
+        running_cost_factor: (13 * param_running) / 100;
+        reliability_decay: 4;
+        bitmask_vehicle_info: bitmask(1);
+    }
+    graphics {
+        additional_text: string(STR_DESC_TR2015_DINING);
+        default: sw_tr2015_dining_graphics;
+        purchase: sp_purchase_t15_red_dragon_zexl;
+        articulated_part: sw_tr2015_dining_articulated;
+        length: sw_length_2_8_2;
+        cargo_capacity: sw_cap_tr2015_dining;
+        loading_speed: sw_loading_tr2015_dining;
+        cargo_age_period: sw_age_tr2015_dining;
+        purchase_cargo_capacity: 48 / 3;
     }
 }
 

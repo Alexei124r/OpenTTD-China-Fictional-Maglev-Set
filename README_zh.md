@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-**0.1.1-alpha**
+**0.1.2-alpha**
 
 源码地址：<https://github.com/Alexei124r/OpenTTD-China-Fictional-Maglev-Set>
 
@@ -17,12 +17,13 @@ MR2015 磁浮轨道工程车。
 - TR08 客运头车，3 种涂装。
 - TR2012 客运头车，9 种涂装。
 - TR2015 客运头车，包含红神龙、银长剑和上海地铁联动涂装。
-- TR2015 一等座、二等座和行李/二等座合造中间车。
-- TR2015F 货运头车、通用货运车、冷藏车，以及 TR2015 行李/二等座合造车。
+- TR2015 一等座、二等座、行李/二等座合造中间车和餐车。
+- TR2015F 货运头车、通用货运车和冷藏车。
 - MR2015 工程车，支持随编组变化的限速和动力隔离。
-- 可配置载客量、购置费用、运行费用、邮件容量、装卸速率和货物老化周期。
+- 可配置载客量、购置费用、运行费用、邮件容量、装卸速率、客运舒适度和
+  货运保鲜度。
 
-本 DEMO 尚不完整。餐车、更多车型和其它内容将在后续版本加入。
+本 Alpha 版本尚不完整。更多车型和其它内容将在后续版本加入。
 
 ## 车辆机制
 
@@ -34,7 +35,8 @@ MR2015 单独运行或仅与其它工程车连挂时为 160 km/h。与普通客�
 
 ## 安装
 
-正式发布后可通过 OpenTTD 的在线内容服务下载。发布前可将
+已发布的 GRF 可通过 OpenTTD 的在线内容服务下载，名称为
+**中国架空磁浮车辆包 / China Fictional Maglev Set**。也可以将
 `china_fictional_maglev.grf` 放入 OpenTTD 的 `newgrf` 目录，并在
 NewGRF 设置中启用。
 
@@ -48,6 +50,8 @@ NewGRF 设置中启用。
 nmlc -c -l lang --default-lang=english.lng `
   -o china_fictional_maglev.grf china_fictional_maglev.nml
 ```
+
+GitHub 发布和 BaNaNaS 打包步骤见 [PUBLISHING.md](PUBLISHING.md)。
 
 ## 制作人员
 
